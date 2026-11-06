@@ -1,7 +1,7 @@
 import type { EdicaoCompleta } from "./conteudo.ts";
 
 /** Os tipos de página dupla do livro. Cada tela nova acrescenta um aqui. */
-type Tela = { kind: "cover" | "save"; label: string };
+type Tela = { kind: "cover" | "save" | "intro"; label: string };
 
 export type PaginaLivro = Tela & { idx: number };
 
@@ -15,7 +15,7 @@ export type SlotSave = {
 
 /** Dados e ações compartilhados pelas telas. As ações chegam com o folhear. */
 export type ContextoLivro = {
-  ano: number;
+  edicao: EdicaoCompleta;
   saves: SlotSave[];
   goSave?: () => void;
   goToc?: () => void;
@@ -60,6 +60,7 @@ export function montarPaginas(_edicao: EdicaoCompleta): PaginaLivro[] {
   const telas: Tela[] = [
     { kind: "cover", label: "Capa" },
     { kind: "save", label: "Seleção de edição" },
+    { kind: "intro", label: "Abertura" },
   ];
   return telas.map((tela, idx) => ({ ...tela, idx }));
 }

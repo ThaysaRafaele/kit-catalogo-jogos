@@ -1,14 +1,14 @@
 import type { ReactElement } from "react";
 import { doisDigitos, type ContextoLivro, type SlotSave } from "@/lib/paginas";
+import { Cabecalho } from "./Cabecalho";
 
 export function SaveEsquerda() {
   return (
     <div className="flex flex-col gap-5">
-      <p className="font-pixelify text-base font-semibold text-vinho uppercase">Arquivo do catálogo</p>
-      <h2 className="font-press text-[30px] leading-[1.4] text-vinho uppercase">
+      <Cabecalho rotulo="Arquivo do catálogo" className="text-[30px]">
         Select <br />
         save file
-      </h2>
+      </Cabecalho>
       <p className="text-lg leading-[1.6]">
         Cada ano da Mostra vira um arquivo salvo. Escolha a edição que você quer jogar, quer dizer,
         ler.
@@ -57,7 +57,7 @@ function ConteudoSlot({ save, numero }: { save: SlotSave; numero: number }) {
 }
 
 const BASE_SLOT = "flex items-center gap-4 rounded-[14px] border-4 p-[18px]";
-const CARTAO = `${BASE_SLOT} border-tinta bg-papel-claro text-left text-texto shadow-[0_6px_0_var(--color-tinta)]`;
+const CARTAO = `${BASE_SLOT} border-tinta bg-papel-claro text-left text-texto shadow-bloco`;
 
 type PropsSlot = { save: SlotSave; numero: number; onAtual?: () => void };
 

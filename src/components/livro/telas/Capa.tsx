@@ -16,8 +16,8 @@ export function CapaEsquerda({ ctx }: { ctx: ContextoLivro }) {
         Level <br />
         Up
       </h1>
-      <p className="rounded-[10px] border-4 border-tinta bg-laranja px-5 py-3 font-press text-2xl text-tinta shadow-[0_6px_0_var(--color-tinta)]">
-        {ctx.ano}
+      <p className="rounded-[10px] border-4 border-tinta bg-laranja px-5 py-3 font-press text-2xl text-tinta shadow-bloco">
+        {ctx.edicao.ano}
       </p>
       <p className="mt-1.5 font-pixelify text-[30px] font-bold text-madeira">Catálogo dos Jogos</p>
       <p className="max-w-[360px] text-lg">Curso de Programação de Jogos Digitais • Campo Grande, MS</p>
@@ -38,7 +38,7 @@ export function CapaDireita({ ctx }: { ctx: ContextoLivro }) {
         Use os botões Voltar e Continue, ou arraste o canto da página para folhear.
       </p>
       <p className="font-pixelify text-base text-madeira">
-        © {ctx.ano} CEEP Hércules Maymone • Campo Grande, MS
+        © {ctx.edicao.ano} CEEP Hércules Maymone • Campo Grande, MS
       </p>
     </div>
   );

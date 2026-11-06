@@ -24,7 +24,7 @@ export default async function PaginaEdicao({ params }: Props) {
   const { edicoes } = carregarConteudo();
   const edicao = edicoes.find((e) => String(e.ano) === ano);
   if (!edicao) notFound();
-  const ctx = { ano: edicao.ano, saves: montarSaves(edicoes, edicao.ano) };
+  const ctx = { edicao, saves: montarSaves(edicoes, edicao.ano) };
 
   return (
     <Cenario>

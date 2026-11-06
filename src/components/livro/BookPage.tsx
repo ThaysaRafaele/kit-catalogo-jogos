@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { LOGO_CURSO, LOGO_ESCOLA } from "@/lib/marca";
 import { doisDigitos, type ContextoLivro, type PaginaLivro } from "@/lib/paginas";
+import { AberturaDireita, AberturaEsquerda } from "./telas/Abertura";
 import { CapaDireita, CapaEsquerda } from "./telas/Capa";
 import { SaveDireita, SaveEsquerda } from "./telas/Save";
 
@@ -27,6 +28,8 @@ function Conteudo({ s, side, ctx }: Props): ReactElement {
       return side === "L" ? <CapaEsquerda ctx={ctx} /> : <CapaDireita ctx={ctx} />;
     case "save":
       return side === "L" ? <SaveEsquerda /> : <SaveDireita ctx={ctx} />;
+    case "intro":
+      return side === "L" ? <AberturaEsquerda ctx={ctx} /> : <AberturaDireita ctx={ctx} />;
   }
 }
 
