@@ -19,9 +19,21 @@
   --color-terra: #6b4a3c;
   --color-coracao: #e3262b;
   --color-grama: #5cb83a;
+
+  /* O protótipo não define altura de linha: os tamanhos não devem impor a deles. */
+  --text-xs--line-height: normal;
+  --text-sm--line-height: normal;
+  --text-base--line-height: normal;
+  --text-lg--line-height: normal;
+  --text-xl--line-height: normal;
+  --text-2xl--line-height: normal;
 }
 
 @layer base {
+  html {
+    line-height: normal;
+  }
+
   a {
     color: var(--color-vinho);
   }
@@ -40,6 +52,15 @@
   .page {
     padding: 44px 40px 72px;
     min-height: 780px;
+  }
+
+  .tela-centro {
+    display: flex;
+    min-height: 660px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
 
   .spread {
