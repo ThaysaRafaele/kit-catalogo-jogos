@@ -3,6 +3,8 @@
 @theme inline {
   --font-press: var(--font-press-start), monospace;
   --font-pixelify: var(--font-pixelify-sans), sans-serif;
+  /* Na Pixelify Sans, a ligadura "fi" faz "Científica" parecer "CientíAca". */
+  --font-pixelify--font-feature-settings: "liga" 0;
   --font-nunito: var(--font-nunito-sans), system-ui, sans-serif;
 
   --color-ceu: #9ad8ff;
@@ -19,6 +21,8 @@
   --color-terra: #6b4a3c;
   --color-coracao: #e3262b;
   --color-grama: #5cb83a;
+
+  --shadow-bloco: 0 6px 0 var(--color-tinta);
 
   /* O protótipo não define altura de linha: os tamanhos não devem impor a deles. */
   --text-xs--line-height: normal;
