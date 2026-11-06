@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Botão pixel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Press+Start+2P&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<button type="button" onClick="{{press}}" disabled="{{disabled}}" aria-pressed="{{ariaPressed}}" aria-label="{{ariaLabel}}" style="font-family: 'Press Start 2P', monospace; font-size: {{fs}}; line-height: 1.4; color: {{fg}}; background: {{bg}}; border: 4px solid #2b1406; border-radius: {{radius}}; padding: {{pad}}; min-height: 44px; min-width: 44px; cursor: {{cursor}}; box-shadow: 0 {{depth}} 0 #2b1406, inset 0 -4px 0 {{shade}}; display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; opacity: {{op}}; white-space: nowrap">{{icon}}{{label}}</button>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"label":{"editor":"text","default":"Let&#39;s play"},"variant":{"editor":"enum","options":["primary","secondary","small","chip","toggle"],"default":"primary"},"pressed":{"editor":"boolean","default":false},"disabled":{"editor":"boolean","default":false},"onPress":{"editor":null},"ariaLabel":{"editor":null},"$preview":{"width":320,"height":120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var p = this.props;
+    var v = p.variant || 'primary';
+    var on = !!p.pressed;
+    var dis = !!p.disabled;
+    var orange = { bg: '#f7931e', fg: '#2b1406', shade: '#c86a0a' };
+    var cream = { bg: '#fff1cf', fg: '#3b1f12', shade: '#e0c48c' };
+    var c = v === 'secondary' ? cream : orange;
+    if (v === 'chip' || v === 'toggle') c = on ? orange : cream;
+    var big = v === 'primary' || v === 'secondary';
+    var toggleable = v === 'chip' || v === 'toggle' || p.pressed !== undefined && v !== 'primary' && v !== 'secondary' && v !== 'small';
+    return {
+      label: p.label ?? "Let's play",
+      icon: v === 'toggle' ? (on ? '■ ' : '□ ') : '',
+      press: function () { if (!dis && p.onPress) p.onPress(); },
+      disabled: dis,
+      ariaPressed: toggleable ? String(on) : undefined,
+      ariaLabel: p.ariaLabel || undefined,
+      bg: dis ? '#e6d6b8' : c.bg,
+      fg: c.fg,
+      shade: dis ? '#cdb994' : c.shade,
+      fs: big ? '16px' : '12px',
+      pad: big ? '16px 28px' : (v === 'chip' ? '10px 16px' : '12px 18px'),
+      radius: v === 'chip' ? '999px' : '14px',
+      depth: big ? '6px' : '4px',
+      cursor: dis ? 'not-allowed' : 'pointer',
+      op: dis ? '0.75' : '1'
+    };
+  }
+}
+</script>
+</body>
+</html>

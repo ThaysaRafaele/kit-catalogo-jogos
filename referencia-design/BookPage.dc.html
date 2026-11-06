@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Página do livro</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Press+Start+2P&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="page" style="background: #fff6e0; padding: 44px 40px 72px; min-height: 780px; height: 100%; position: relative; box-sizing: border-box; font-family: 'Nunito', system-ui, sans-serif; color: #2b1a10">
+
+<sc-if value="{{isL}}" hint-placeholder-val="{{true}}">
+
+<sc-if value="{{isCover}}" hint-placeholder-val="{{true}}">
+<div style="min-height: 660px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center">
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: center">
+<div style="background: #2b1406; padding: 4px; clip-path: polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px))">
+<div style="background: #ffffff; padding: 10px; clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px))">
+<img src="{{logoEscola}}" alt="Logo do CEEP Hércules Maymone" style="display: block; width: 112px; height: 112px; object-fit: contain">
+</div>
+</div>
+<sc-if value="{{temLogoCurso}}">
+<img src="{{logoCurso}}" alt="Logo do curso PJD Games, Programação de Jogos Digitais" style="display: block; width: 136px; height: 136px; object-fit: contain">
+</sc-if>
+<sc-if value="{{semLogoCurso}}" hint-placeholder-val="{{true}}">
+<div role="img" aria-label="Espaço reservado para a logo do curso" style="width: 128px; height: 128px; box-sizing: border-box; border: 4px dashed #6b4a3c; display: flex; align-items: center; justify-content: center; padding: 8px; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #3b1f12; text-align: center; background: #fffdf6">Logo do curso</div>
+</sc-if>
+</div>
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 17px; font-weight: 600; letter-spacing: 1px; color: #6b1d12">MOSTRA CULTURAL • CEEP HÉRCULES MAYMONE</p>
+<h1 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 52px; line-height: 1.3; color: #6b1d12; text-shadow: 5px 5px 0 #f7b24a">LEVEL<br>UP</h1>
+<p style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 24px; color: #2b1406; background: #f7931e; border: 4px solid #2b1406; border-radius: 10px; padding: 12px 20px; box-shadow: 0 6px 0 #2b1406">2026</p>
+<p style="margin: 6px 0 0; font-family: 'Pixelify Sans', sans-serif; font-size: 30px; font-weight: 700; color: #3b1f12">Catálogo dos Jogos</p>
+<p style="margin: 0; font-size: 18px; max-width: 360px">Curso de Programação de Jogos Digitais • Campo Grande, MS</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isSave}}">
+<div style="display: flex; flex-direction: column; gap: 20px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 600; color: #6b1d12">ARQUIVO DO CATÁLOGO</p>
+<h2 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 30px; line-height: 1.4; color: #6b1d12">SELECT<br>SAVE FILE</h2>
+<p style="margin: 0; font-size: 18px; line-height: 1.6">Cada ano da Mostra vira um arquivo salvo. Escolha a edição que você quer jogar, quer dizer, ler.</p>
+<svg width="160" height="160" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true" style="align-self: center; margin-top: 24px"><path fill="#3b1f12" d="M1 1h12l2 2v12h-14z"></path><path fill="#0b2d8f" d="M2 2h10l2 2v10h-12z"></path><path fill="#fff6e0" d="M4 2h7v4h-7z"></path><path fill="#3b1f12" d="M8 3h2v2h-2z"></path><path fill="#fff6e0" d="M3 9h10v5h-10z"></path><path fill="#f7931e" d="M4 10h8v1h-8zM4 12h6v1h-6z"></path></svg>
+<p style="margin: 0; font-size: 17px; line-height: 1.6">Uma nova edição chega a cada ano. Os slots vazios esperam as próximas turmas.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isIntro}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 600; color: #6b1d12">TUTORIAL</p>
+<h2 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 26px; line-height: 1.4; color: #6b1d12">O CURSO</h2>
+<p style="margin: 0; font-size: 18px; line-height: 1.65">No curso técnico de Programação de Jogos Digitais do CEEP Hércules Maymone, estudantes criam jogos do zero: ideia, roteiro, personagens, cenários, programação e testes.</p>
+<p style="margin: 0; font-size: 18px; line-height: 1.65">Cada turma se organiza em estúdios. Cada estúdio tem roteiristas, artistas, programadores e testadores, como uma equipe de verdade.</p>
+<div style="background: #fffdf6; border: 4px solid #2b1406; border-radius: 12px; padding: 18px 20px; box-shadow: 0 6px 0 #2b1406">
+<p style="margin: 0 0 8px; font-family: 'Pixelify Sans', sans-serif; font-size: 18px; font-weight: 700; color: #6b1d12">MISSÃO PRINCIPAL</p>
+<p style="margin: 0; font-size: 17px; line-height: 1.6">[Escreva aqui, em 2 ou 3 linhas, o objetivo do curso e o que os estudantes aprendem.]</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isToc}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 600; color: #6b1d12">SUMÁRIO</p>
+<h2 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 26px; line-height: 1.4; color: #6b1d12">SELEÇÃO<br>DE FASES</h2>
+<p style="margin: 0; font-size: 18px; line-height: 1.6">Cada jogo é uma fase. Filtre por turma ou por tema e escolha onde começar.</p>
+<div role="group" aria-label="Filtrar por turma" style="display: flex; flex-direction: column; gap: 10px">
+<p aria-hidden="true" style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 18px; font-weight: 700">Turma</p>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<sc-for list="{{turmaOpts}}" as="o" hint-placeholder-count="3">
+<dc-import name="PixelButton" label="{{o.label}}" variant="chip" pressed="{{o.on}}" on-press="{{o.pick}}" hint-size="96px,44px"></dc-import>
+</sc-for>
+</div>
+</div>
+<div role="group" aria-label="Filtrar por tema" style="display: flex; flex-direction: column; gap: 10px">
+<p aria-hidden="true" style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 18px; font-weight: 700">Tema</p>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<sc-for list="{{temaOpts}}" as="o" hint-placeholder-count="3">
+<dc-import name="PixelButton" label="{{o.label}}" variant="chip" pressed="{{o.on}}" on-press="{{o.pick}}" hint-size="110px,44px"></dc-import>
+</sc-for>
+</div>
+</div>
+<p aria-live="polite" style="margin: 6px 0 0; font-size: 17px; font-weight: 700">{{tocCount}}</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isMentors}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 600; color: #6b1d12">SELECIONE SEU GUIA</p>
+<h2 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 22px; line-height: 1.5; color: #6b1d12">SEU TIME DE MENTORES</h2>
+<p style="margin: 0; font-size: 18px; line-height: 1.6">Toda party precisa de guias. Conheça quem acompanhou os estúdios nesta jornada.</p>
+<dc-import name="MentorCard" mentor="{{lider}}" hint-size="100%,560px"></dc-import>
+</div>
+</sc-if>
+
+<sc-if value="{{isTurma}}">
+<div style="min-height: 660px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center">
+<p style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 14px; color: #2b1406; background: #f7931e; border: 4px solid #2b1406; border-radius: 10px; padding: 10px 16px">MUNDO {{s.mundo}}</p>
+<svg width="176" height="176" viewBox="0 0 11 11" shape-rendering="crispEdges" aria-hidden="true"><path fill="#3b1f12" d="M2 1h1v10h-1z"></path><path fill="#e3262b" d="M3 1h6v1h1v3h-1v1h-6z"></path><path fill="#f7b24a" d="M5 2h2v1h1v1h-1v1h-2v-1h-1v-1h1z"></path><path fill="#5cb83a" d="M0 10h11v1h-11z"></path></svg>
+<h2 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 34px; line-height: 1.4; color: #6b1d12">TURMA<br>{{s.turma}}</h2>
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 22px; color: #3b1f12">{{s.lema}}</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isGameA}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 17px; font-weight: 700; color: #6b1d12">FASE {{s.game.fase}} • TURMA {{s.game.turma}}</p>
+<h2 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 28px; line-height: 1.45; color: #6b1d12; overflow-wrap: anywhere">{{s.game.nome}}</h2>
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 22px; line-height: 1.4; color: #3b1f12">“{{s.game.frase}}”</p>
+<dc-import name="ThemeBadge" tema="{{s.game.tema}}" size="lg" hint-size="320px,48px"></dc-import>
+<dl class="duo" style="margin: 0">
+<div style="background: #fffdf6; border: 3px solid #2b1406; border-radius: 10px; padding: 10px 12px"><dt style="font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">GÊNERO</dt><dd style="margin: 4px 0 0; font-size: 16px">{{s.game.genero}}</dd></div>
+<div style="background: #fffdf6; border: 3px solid #2b1406; border-radius: 10px; padding: 10px 12px"><dt style="font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">PLATAFORMA</dt><dd style="margin: 4px 0 0; font-size: 16px">{{s.game.plataforma}}</dd></div>
+<div style="background: #fffdf6; border: 3px solid #2b1406; border-radius: 10px; padding: 10px 12px"><dt style="font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">TURMA</dt><dd style="margin: 4px 0 0; font-size: 16px">{{s.game.turma}}</dd></div>
+<div style="background: #fffdf6; border: 3px solid #2b1406; border-radius: 10px; padding: 10px 12px"><dt style="font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">ESTÚDIO</dt><dd style="margin: 4px 0 0; font-size: 16px">{{s.game.estudio}}</dd></div>
+</dl>
+<div style="background: #3b1f12; color: #fff6e0; border-radius: 12px; padding: 18px 20px">
+<h3 style="margin: 0 0 8px; font-family: 'Press Start 2P', monospace; font-size: 14px; color: #f7b24a">SINOPSE</h3>
+<p style="margin: 0; font-size: 18px; line-height: 1.65">{{s.game.sinopse}}</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isGameB}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 17px; font-weight: 700; color: #6b1d12">FASE {{s.game.fase}} • {{s.game.nome}}</p>
+<h3 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 22px; line-height: 1.4; color: #6b1d12">O MUNDO</h3>
+<dc-import name="DrawingFrame" variant="galeria" src="{{s.game.mundo.foto}}" alt="Cenário do jogo {{s.game.nome}}" legenda="{{s.game.mundo.lugar}} • {{s.game.mundo.epoca}}" altura="{{290}}" hint-size="100%,400px"></dc-import>
+<h4 style="margin: 4px 0 0; font-family: 'Pixelify Sans', sans-serif; font-size: 20px; font-weight: 700">3 características visuais</h4>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{s.game.mundo.caracts}}" as="c" hint-placeholder-count="3">
+<li style="display: flex; gap: 12px; align-items: center; font-size: 17px"><span aria-hidden="true" style="flex: none; width: 32px; height: 32px; background: #f7931e; border: 3px solid #2b1406; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 12px; color: #2b1406">{{c.n}}</span>{{c.t}}</li>
+</sc-for>
+</ol>
+<div class="duo">
+<div style="background: #fffdf6; border: 3px solid #2b1406; border-radius: 10px; padding: 10px 12px"><p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">CLIMA</p><p style="margin: 4px 0 0; font-size: 16px">{{s.game.mundo.clima}}</p></div>
+<div style="background: #fffdf6; border: 3px solid #2b1406; border-radius: 10px; padding: 10px 12px"><p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">INSPIRAÇÃO REAL</p><p style="margin: 4px 0 0; font-size: 16px">{{s.game.mundo.inspiracao}}</p></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isEnd}}">
+<div style="min-height: 660px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; text-align: center">
+<h2 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 30px; line-height: 1.5; color: #6b1d12">THANKS<br>FOR<br>PLAYING</h2>
+<div aria-hidden="true" style="display: flex; gap: 8px">
+<svg width="42" height="36" viewBox="0 0 7 6" shape-rendering="crispEdges"><path fill="#e3262b" d="M1 0h2v1h1v-1h2v1h1v2h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-2h1z"></path></svg>
+<svg width="42" height="36" viewBox="0 0 7 6" shape-rendering="crispEdges"><path fill="#e3262b" d="M1 0h2v1h1v-1h2v1h1v2h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-2h1z"></path></svg>
+<svg width="42" height="36" viewBox="0 0 7 6" shape-rendering="crispEdges"><path fill="#e3262b" d="M1 0h2v1h1v-1h2v1h1v2h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-2h1z"></path></svg>
+</div>
+<p style="margin: 0; font-size: 18px; line-height: 1.65; max-width: 420px">Obrigado a cada estudante que desenhou, programou, testou e apresentou. [Escreva aqui um agradecimento às famílias, à escola e aos visitantes da Mostra.]</p>
+</div>
+</sc-if>
+
+</sc-if>
+
+<sc-if value="{{isR}}">
+
+<sc-if value="{{isCover}}">
+<div style="min-height: 660px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; text-align: center">
+<p class="blink" style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 22px; color: #6b1d12">PRESS START</p>
+<nav aria-label="Menu inicial" style="display: flex; flex-direction: column; align-items: center; gap: 20px">
+<dc-import name="PixelButton" label="Let's play" variant="primary" on-press="{{goSave}}" hint-size="240px,60px"></dc-import>
+<dc-import name="PixelButton" label="Menu" variant="primary" on-press="{{goToc}}" hint-size="160px,60px"></dc-import>
+<dc-import name="PixelButton" label="Continue" variant="secondary" on-press="{{goIntro}}" hint-size="220px,60px"></dc-import>
+</nav>
+<p style="margin: 18px 0 0; font-size: 16px; line-height: 1.6">Use os botões Voltar e Continue, ou arraste o canto da página para folhear.</p>
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; color: #3b1f12">© 2026 CEEP Hércules Maymone • Campo Grande, MS</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isSave}}">
+<div style="display: flex; flex-direction: column; gap: 22px; padding-top: 12px">
+<sc-for list="{{saves}}" as="sv" hint-placeholder-count="3">
+<sc-if value="{{sv.ativo}}">
+<button type="button" onClick="{{sv.go}}" style="text-align: left; width: 100%; display: flex; gap: 16px; align-items: center; background: #fffdf6; border: 4px solid #2b1406; border-radius: 14px; padding: 18px; box-shadow: 0 6px 0 #2b1406; cursor: pointer; font-family: 'Nunito', sans-serif; color: #2b1a10">
+<span aria-hidden="true" style="width: 68px; height: 68px; flex: none; background: #f7931e; border: 4px solid #2b1406; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 14px; color: #2b1406">{{sv.slot}}</span>
+<span style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'Press Start 2P', monospace; font-size: 18px; color: #6b1d12">{{sv.ano}}</span>
+<span style="font-size: 18px; font-weight: 800">{{sv.titulo}}</span>
+<span style="font-size: 16px">{{sv.info}}</span>
+</span>
+</button>
+</sc-if>
+<sc-if value="{{sv.vazio}}">
+<div style="display: flex; gap: 16px; align-items: center; background: #f3e6c6; border: 4px dashed #6b4a3c; border-radius: 14px; padding: 18px; color: #3b1f12">
+<span aria-hidden="true" style="width: 68px; height: 68px; flex: none; border: 4px dashed #6b4a3c; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 14px">{{sv.slot}}</span>
+<span style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'Press Start 2P', monospace; font-size: 18px">{{sv.ano}}</span>
+<span style="font-size: 18px; font-weight: 800">{{sv.titulo}}</span>
+<span style="font-size: 16px">{{sv.info}}</span>
+</span>
+</div>
+</sc-if>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isIntro}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 600; color: #6b1d12">EVENTO</p>
+<h2 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 26px; line-height: 1.4; color: #6b1d12">A MOSTRA</h2>
+<p style="margin: 0; font-size: 18px; line-height: 1.65">Na Mostra Cultural LEVEL UP 2026, cada estúdio apresenta seu jogo ao público. Personagens e cenários deste catálogo foram desenhados à mão, com caneta preta e lápis de cor, e depois escaneados.</p>
+<h3 style="margin: 4px 0 0; font-family: 'Pixelify Sans', sans-serif; font-size: 20px; font-weight: 700">Temas desta edição</h3>
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px">
+<dc-import name="ThemeBadge" tema="folclore" size="lg" hint-size="320px,48px"></dc-import>
+<dc-import name="ThemeBadge" tema="scifi" size="lg" hint-size="360px,48px"></dc-import>
+</div>
+<h3 style="margin: 8px 0 0; font-family: 'Pixelify Sans', sans-serif; font-size: 20px; font-weight: 700">Como ler este livro</h3>
+<ul style="margin: 0; padding-left: 22px; font-size: 17px; line-height: 1.7">
+<li>Botões Voltar e Continue folheiam as páginas.</li>
+<li>Também dá para arrastar o canto da página com o mouse ou o dedo.</li>
+<li>Sumário leva à seleção de fases.</li>
+<li>Modo leitura mostra tudo em uma página contínua, sem animação.</li>
+</ul>
+</div>
+</sc-if>
+
+<sc-if value="{{isToc}}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<h3 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 16px; color: #6b1d12">MAPA DE FASES</h3>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px">
+<sc-for list="{{toc}}" as="t" hint-placeholder-count="3">
+<li>
+<a href="#s-{{t.idx}}" onClick="{{t.go}}" style="display: flex; gap: 14px; align-items: center; text-decoration: none; color: #2b1a10; background: #fffdf6; border: 4px solid #2b1406; border-radius: 14px; padding: 14px; box-shadow: 0 5px 0 #2b1406">
+<span aria-hidden="true" style="flex: none; width: 64px; height: 64px; background: #5cb83a; border: 4px solid #2b1406; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 12px; color: #12300a">{{t.fase}}</span>
+<span style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<span style="font-size: 18px; font-weight: 800">{{t.nome}}</span>
+<span style="font-size: 16px">Fase {{t.fase}} • Turma {{t.turma}} • {{t.temaNome}}</span>
+</span>
+</a>
+</li>
+</sc-for>
+</ol>
+<sc-if value="{{tocVazio}}">
+<p style="margin: 0; font-size: 17px; background: #f3e6c6; border: 3px dashed #6b4a3c; border-radius: 10px; padding: 14px">Nenhuma fase com esse filtro. Tente outra turma ou outro tema.</p>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isMentors}}">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<sc-for list="{{profs}}" as="m" hint-placeholder-count="2">
+<dc-import name="MentorCard" mentor="{{m}}" hint-size="100%,480px"></dc-import>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isTurma}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<h3 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 16px; line-height: 1.5; color: #6b1d12">FASES DESTE MUNDO</h3>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px">
+<sc-for list="{{s.jogos}}" as="j" hint-placeholder-count="2">
+<li>
+<a href="#s-{{j.idx}}" onClick="{{j.go}}" style="display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: #2b1a10; background: #fffdf6; border: 4px solid #2b1406; border-radius: 14px; padding: 16px; box-shadow: 0 5px 0 #2b1406">
+<span style="font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 700; color: #6b1d12">FASE {{j.fase}}</span>
+<span style="font-size: 19px; font-weight: 800">{{j.nome}}</span>
+<span style="font-size: 16px">{{j.estudio}} • {{j.temaNome}}</span>
+</a>
+</li>
+</sc-for>
+</ol>
+<div style="background: #fffdf6; border: 3px solid #2b1406; border-radius: 10px; padding: 14px 16px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">MENTOR DA TURMA</p>
+<p style="margin: 4px 0 0; font-size: 17px">[Nome do professor ou professora orientadora]</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isGameA}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h3 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 18px; color: #6b1d12">PERSONAGENS</h3>
+<div class="vs-grid">
+<dc-import name="CharacterSheet" tipo="protagonista" nome="{{s.game.prot.nome}}" foto="{{s.game.prot.foto}}" campos="{{s.game.prot.campos}}" hint-size="100%,600px"></dc-import>
+<p aria-hidden="true" style="margin: 0; justify-self: center; width: 56px; height: 56px; background: #e3262b; border: 4px solid #2b1406; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 14px; color: #ffffff; box-shadow: 0 4px 0 #2b1406">VS</p>
+<dc-import name="CharacterSheet" tipo="antagonista" nome="{{s.game.ant.nome}}" foto="{{s.game.ant.foto}}" campos="{{s.game.ant.campos}}" hint-size="100%,600px"></dc-import>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isGameB}}">
+<div style="display: flex; flex-direction: column; gap: 20px">
+<section aria-label="Como se joga" style="display: flex; flex-direction: column; gap: 12px">
+<h3 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 16px; color: #6b1d12">COMO SE JOGA</h3>
+<dc-import name="ControlsBlock" controles="{{s.game.controles}}" hint-size="100%,220px"></dc-import>
+</section>
+<section aria-label="Bastidores, diário de dev" style="background: #fffdf6; border: 4px solid #2b1406; border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+<h3 style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 14px; line-height: 1.5; color: #6b1d12">BASTIDORES • DIÁRIO DE DEV</h3>
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 700; color: #6b1d12">&gt; LOG 01: MAIOR DESAFIO</p>
+<p style="margin: 0; font-size: 17px; line-height: 1.6">{{s.game.desafio}}</p>
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 700; color: #2f6b2a">&gt; LOG 02: COMO RESOLVEMOS</p>
+<p style="margin: 0; font-size: 17px; line-height: 1.6">{{s.game.solucao}}</p>
+</section>
+<dc-import name="TeamCredits" titulo="EQUIPE" subtitulo="{{s.game.estudio}}" equipe="{{s.game.equipe}}" hint-size="100%,280px"></dc-import>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 18px">
+<a href="{{s.game.link}}" style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-family: 'Press Start 2P', monospace; font-size: 16px; text-decoration: none; color: #2b1406; background: #f7931e; border: 4px solid #2b1406; border-radius: 14px; padding: 14px 24px; box-shadow: 0 6px 0 #2b1406">▶ JOGAR</a>
+<div role="img" aria-label="Espaço para o QR code do jogo" style="width: 88px; height: 88px; box-sizing: border-box; border: 4px dashed #6b4a3c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; color: #3b1f12; text-align: center">QR code</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isEnd}}">
+<div style="min-height: 660px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center">
+<p style="margin: 0; font-family: 'Press Start 2P', monospace; font-size: 48px; color: #6b1d12; text-shadow: 5px 5px 0 #f7b24a">END</p>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: center">
+<div style="background: #2b1406; padding: 4px; clip-path: polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px))">
+<div style="background: #ffffff; padding: 12px; clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px))">
+<img src="{{logoEscola}}" alt="Logo do CEEP Hércules Maymone" style="display: block; width: 140px; height: 140px; object-fit: contain">
+</div>
+</div>
+<sc-if value="{{temLogoCurso}}">
+<img src="{{logoCurso}}" alt="Logo do curso PJD Games, Programação de Jogos Digitais" style="display: block; width: 164px; height: 164px; object-fit: contain">
+</sc-if>
+<sc-if value="{{semLogoCurso}}" hint-placeholder-val="{{true}}">
+<div role="img" aria-label="Espaço reservado para a logo do curso" style="width: 148px; height: 148px; box-sizing: border-box; border: 4px dashed #6b4a3c; display: flex; align-items: center; justify-content: center; padding: 8px; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #3b1f12; background: #fffdf6">Logo do curso</div>
+</sc-if>
+</div>
+<p style="margin: 0; max-width: 440px; font-family: 'Pixelify Sans', sans-serif; font-size: 21px; font-weight: 700; line-height: 1.35; color: #2b1406">Centro Estadual de Educação Profissional Hércules Maymone</p>
+<div style="width: 100%; max-width: 420px">
+<dc-import name="TeamCredits" titulo="CRÉDITOS DA MOSTRA" subtitulo="LEVEL UP 2026" equipe="{{creditosMostra}}" hint-size="100%,320px"></dc-import>
+</div>
+<dc-import name="PixelButton" label="Jogar de novo" variant="primary" on-press="{{goStart}}" hint-size="280px,60px"></dc-import>
+<p style="margin: 0; font-size: 16px">Próximo save: LEVEL UP 2027</p>
+</div>
+</sc-if>
+
+</sc-if>
+
+<div aria-hidden="true" style="position: absolute; left: 24px; right: 24px; bottom: 20px; display: flex; flex-direction: {{footDir}}; justify-content: flex-start; align-items: center; gap: 8px">
+<img src="{{logoEscola}}" alt="" style="display: block; height: 24px; width: 24px; object-fit: contain">
+<sc-if value="{{temLogoCurso}}"><img src="{{logoCurso}}" alt="" style="display: block; height: 24px; width: 24px; object-fit: contain"></sc-if>
+<sc-if value="{{semLogoCurso}}" hint-placeholder-val="{{true}}"><span style="display: block; width: 24px; height: 24px; box-sizing: border-box; border: 2px dashed #8a7a66"></span></sc-if>
+<span style="font-family: 'Press Start 2P', monospace; font-size: 12px; color: #5a3a2c">{{num}}</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"s":{"editor":null},"side":{"editor":"enum","options":["L","R"],"default":"L"},"ctx":{"editor":null},"$preview":{"width":620,"height":780}}'>
+var LOGO = '/_blob/a4556ec426b2a2c39f2554e863edbcd0';
+function noop() {}
+var DEF = { logoEscola: LOGO, logoCurso: '/_blob/c2961d77c59a2d971afd06d60f05d0f3', saves: [], turmaOpts: [], temaOpts: [], toc: [], tocVazio: false, tocCount: '', lider: null, profs: [], creditosMostra: [], goSave: noop, goToc: noop, goIntro: noop, goStart: noop };
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+class Component extends DCLogic {
+  renderVals() {
+    var p = this.props;
+    var s = p.s || { kind: 'cover', idx: 0, label: 'Capa' };
+    var R = p.side === 'R';
+    var c = Object.assign({}, DEF, p.ctx || {});
+    var k = s.kind;
+    return Object.assign(c, {
+      s: s, isL: !R, isR: R,
+      isCover: k === 'cover', isSave: k === 'save', isIntro: k === 'intro', isToc: k === 'toc', isMentors: k === 'mentors',
+      isTurma: k === 'turma', isGameA: k === 'gameA', isGameB: k === 'gameB', isEnd: k === 'end',
+      num: pad((s.idx || 0) * 2 + (R ? 2 : 1)),
+      footDir: R ? 'row-reverse' : 'row',
+      temLogoCurso: !!c.logoCurso, semLogoCurso: !c.logoCurso
+    });
+  }
+}
+</script>
+</body>
+</html>

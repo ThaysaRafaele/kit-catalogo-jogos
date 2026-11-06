@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Card de mentor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Press+Start+2P&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<article style="width: 100%; box-sizing: border-box; background: #fffaf0; border: 4px solid #2b1406; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 0 #2b1406; font-family: 'Nunito', sans-serif; color: #2b1a10">
+<sc-if value="{{m.lider}}" hint-placeholder-val="{{true}}">
+<p style="margin: 0; background: #f2c230; color: #2b1406; border-bottom: 4px solid #2b1406; padding: 10px 14px; text-align: center; font-family: 'Press Start 2P', monospace; font-size: 13px; letter-spacing: 1px">★ LÍDER DO CLÃ ★</p>
+</sc-if>
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; gap: 14px; align-items: center">
+<div style="flex: none; width: 96px; height: 96px; box-sizing: border-box; background: #9ad8ff; border: 4px solid #2b1406; border-radius: 10px; overflow: hidden; display: flex; align-items: flex-end; justify-content: center">
+<sc-if value="{{temFoto}}">
+<img src="{{m.foto}}" alt="Foto ou avatar de {{m.nome}}" style="width: 100%; height: 100%; object-fit: cover">
+</sc-if>
+<sc-if value="{{semFoto}}" hint-placeholder-val="{{true}}">
+<svg width="80" height="80" viewBox="0 0 10 10" shape-rendering="crispEdges" role="img" aria-label="Avatar provisório"><path fill="#3b1f12" d="M3 1h4v1h1v3h-1v1h-4v-1h-1v-3h1z"></path><path fill="#f3c9a0" d="M3 2h4v3h-4z"></path><path fill="#3b1f12" d="M4 3h1v1h-1zM6 3h1v1h-1z"></path><path fill="#f7931e" d="M2 7h6v1h1v2h-8v-2h1z"></path></svg>
+</sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+<h3 style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 22px; font-weight: 700; line-height: 1.2; color: #2b1406">{{m.nome}}</h3>
+<p style="margin: 0; display: inline-flex; align-self: flex-start; gap: 6px; background: #3b1f12; color: #fff6e0; border-radius: 6px; padding: 5px 10px; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700"><span style="color: #f7b24a">CLASSE</span>{{m.classe}}</p>
+</div>
+</div>
+<div>
+<p style="margin: 0 0 8px; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">SKILLS</p>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{m.skills}}" as="sk" hint-placeholder-count="3">
+<li style="background: #fffdf6; border: 3px solid #2b1406; border-radius: 999px; padding: 4px 12px; font-size: 16px; font-weight: 700">{{sk.t}}</li>
+</sc-for>
+</ul>
+</div>
+<div style="background: #2e4a1f; color: #ffffff; border-radius: 10px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start">
+<svg width="24" height="24" viewBox="0 0 7 7" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; margin-top: 2px"><path fill="#ffe27a" d="M3 0h1v2h3v1h-1v1h1v3h-1v-1h-1v-1h-1v1h-1v1h-1v-3h1v-1h-1v-1h3z"></path></svg>
+<div><p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #ffe27a">SPECIAL ABILITY</p><p style="margin: 4px 0 0; font-size: 16px; line-height: 1.5">{{m.special}}</p></div>
+</div>
+<div>
+<p style="margin: 0 0 6px; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">SIDE QUESTS</p>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{m.quests}}" as="q" hint-placeholder-count="2">
+<li style="display: flex; gap: 10px; align-items: center; font-size: 16px"><span aria-hidden="true" style="flex: none; width: 10px; height: 10px; background: #f7931e; border: 2px solid #2b1406"></span>{{q.t}}</li>
+</sc-for>
+</ul>
+</div>
+<div style="background: #fff1cf; border: 3px dashed #6b4a3c; border-radius: 10px; padding: 10px 14px">
+<p style="margin: 0; font-family: 'Pixelify Sans', sans-serif; font-size: 15px; font-weight: 700; color: #6b1d12">? FUN FACT</p>
+<p style="margin: 4px 0 0; font-size: 16px; line-height: 1.5">{{m.fun}}</p>
+</div>
+</div>
+</article>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mentor":{"editor":null},"$preview":{"width":480,"height":680}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var m = this.props.mentor ?? {
+      lider: true, foto: '', nome: '[Nome da coordenação]', classe: 'Líder do Clã',
+      skills: [ { t: '[Skill 1]' }, { t: '[Skill 2]' }, { t: '[Skill 3]' } ],
+      special: '[Special ability: o superpoder em sala]',
+      quests: [ { t: '[Side quest 1]' }, { t: '[Side quest 2]' } ],
+      fun: '[Fun fact: uma curiosidade divertida]'
+    };
+    return { m: m, temFoto: !!m.foto, semFoto: !m.foto };
+  }
+}
+</script>
+</body>
+</html>

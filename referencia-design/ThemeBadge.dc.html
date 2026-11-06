@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Selo de tema</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Press+Start+2P&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<span style="display: inline-flex; align-items: center; gap: 10px; font-family: 'Pixelify Sans', sans-serif; font-weight: 700; font-size: {{fs}}; line-height: 1.2; color: {{fg}}; background: {{bg}}; border: 3px solid {{borda}}; border-radius: 8px; padding: {{pad}}; box-shadow: 0 4px 0 {{sombra}}">
+<sc-if value="{{folclore}}" hint-placeholder-val="{{true}}">
+<svg width="{{ic}}" height="{{ic}}" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><path fill="#d9c2ff" d="M3 0h3v1h-2v1h-1v4h1v1h2v1h-3v-1h-1v-1h-1v-4h1v-1h1z"></path><path fill="#ffe27a" d="M6 3h1v1h-1z"></path></svg>
+</sc-if>
+<sc-if value="{{scifi}}">
+<svg width="{{ic}}" height="{{ic}}" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><path fill="#170a2e" d="M3 1h2v1h1v1h1v2h-1v1h-1v1h-2v-1h-1v-1h-1v-2h1v-1h1z"></path><path fill="#ff2e93" d="M0 4h2v1h-2zM6 3h2v1h-2z"></path><path fill="#ffffff" d="M3 2h1v1h-1z"></path></svg>
+</sc-if>
+<span><span style="font-weight: 600">Tema: </span>{{texto}}</span>
+</span>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["folclore","scifi"],"default":"folclore"},"size":{"editor":"enum","options":["sm","lg"],"default":"lg"},"$preview":{"width":460,"height":120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var t = this.props.tema === 'scifi' ? 'scifi' : 'folclore';
+    var lg = (this.props.size ?? 'lg') === 'lg';
+    var c = t === 'scifi'
+      ? { bg: '#12d6ec', fg: '#170a2e', borda: '#ff2e93', sombra: '#b3126a', texto: 'Ficção Científica Retrofuturista' }
+      : { bg: '#2e4a1f', fg: '#ffffff', borda: '#7d4fc0', sombra: '#3d1f66', texto: 'Folclore e Lendas Urbanas' };
+    return Object.assign({}, c, {
+      folclore: t === 'folclore', scifi: t === 'scifi',
+      fs: lg ? '18px' : '16px', pad: lg ? '8px 14px' : '6px 10px', ic: lg ? 24 : 20
+    });
+  }
+}
+</script>
+</body>
+</html>

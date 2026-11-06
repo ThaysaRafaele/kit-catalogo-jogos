@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Moldura de desenho</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Press+Start+2P&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<figure style="margin: 0; width: 100%; box-sizing: border-box; font-family: 'Nunito', sans-serif; color: #2b1a10">
+
+<sc-if value="{{galeria}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 0">
+<div style="width: 100%; box-sizing: border-box; background: #7a4520; padding: 14px; border-radius: 4px; box-shadow: inset 4px 4px 0 #b06b34, inset -4px -4px 0 #4a260f, 0 6px 0 #2b1406">
+<div style="background: #fffdf6; border: 3px solid #2b1406; padding: 12px">
+<sc-if value="{{temImg}}">
+<img src="{{src}}" alt="{{alt}}" style="display: block; width: 100%; height: {{h}}; object-fit: contain; background: #ffffff">
+</sc-if>
+<sc-if value="{{semImg}}" hint-placeholder-val="{{true}}">
+<div role="img" aria-label="Espaço para desenho escaneado: {{alt}}" style="height: {{h}}; box-sizing: border-box; border: 3px dashed #8a7a66; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 12px">
+<svg width="48" height="48" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><path fill="#f7b24a" d="M5 0h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h1v-1h1v-1h1v-1h1v-1h-1z"></path><path fill="#3b1f12" d="M1 6h1v1h1v1h-2zM5 0h1v1h-1z"></path><path fill="#e3262b" d="M6 1h1v1h-1z"></path></svg>
+<span style="font-family: 'Pixelify Sans', sans-serif; font-size: 18px; font-weight: 700">Desenho escaneado</span>
+<span style="font-size: 16px">Caneta preta + lápis de cor</span>
+</div>
+</sc-if>
+</div>
+</div>
+<figcaption style="margin-top: -2px; background: #e8c35a; border: 3px solid #2b1406; border-radius: 4px; padding: 6px 14px; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 700; color: #2b1406; box-shadow: 0 4px 0 #2b1406; text-align: center; position: relative; top: 10px">{{legenda}}</figcaption>
+</div>
+</sc-if>
+
+<sc-if value="{{carta}}">
+<div style="background: #fff6e0; border: 4px solid #2b1406; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 0 #2b1406">
+<div style="background: #ffffff; margin: 10px; border: 3px solid {{accent}}; border-radius: 6px; overflow: hidden">
+<sc-if value="{{temImg}}">
+<img src="{{src}}" alt="{{alt}}" style="display: block; width: 100%; height: {{h}}; object-fit: contain; background: #ffffff">
+</sc-if>
+<sc-if value="{{semImg}}" hint-placeholder-val="{{true}}">
+<div role="img" aria-label="Espaço para desenho escaneado: {{alt}}" style="height: {{h}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 10px; box-sizing: border-box">
+<svg width="40" height="40" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><path fill="#f7b24a" d="M5 0h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h1v-1h1v-1h1v-1h1v-1h-1z"></path><path fill="#3b1f12" d="M1 6h1v1h1v1h-2z"></path></svg>
+<span style="font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 700">Desenho escaneado</span>
+</div>
+</sc-if>
+</div>
+<sc-if value="{{temLegenda}}">
+<figcaption style="padding: 0 12px 10px; font-family: 'Pixelify Sans', sans-serif; font-size: 16px; font-weight: 700; text-align: center">{{legenda}}</figcaption>
+</sc-if>
+</div>
+</sc-if>
+
+</figure>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["galeria","carta"],"default":"galeria"},"src":{"editor":"text","default":""},"alt":{"editor":"text","default":"Cenário do jogo"},"legenda":{"editor":"text","default":"[Nome do lugar] • [Época]"},"altura":{"editor":"int","min":120,"max":600,"default":300,"unit":"px"},"accent":{"editor":"color","default":"#2f6b2a"},"$preview":{"width":440,"height":460}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var p = this.props;
+    var src = p.src || '';
+    var v = p.variant === 'carta' ? 'carta' : 'galeria';
+    var leg = p.legenda ?? '[Nome do lugar] • [Época]';
+    return {
+      galeria: v === 'galeria', carta: v === 'carta',
+      src: src, temImg: !!src, semImg: !src,
+      alt: p.alt ?? 'Cenário do jogo',
+      legenda: leg, temLegenda: !!leg,
+      h: (p.altura ?? 300) + 'px',
+      accent: p.accent ?? '#2f6b2a'
+    };
+  }
+}
+</script>
+</body>
+</html>

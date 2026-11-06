@@ -1,0 +1,114 @@
+[
+  {
+    "nome": "Jean Bites",
+    "foto": "/mentores/jean-bites.webp",
+    "cargo": "coordenação",
+    "classe": "Líder do Clã",
+    "skills": [
+      "Analista de sistemas",
+      "MBA em Gestão de Projetos",
+      "Docência para Educação Profissional"
+    ],
+    "specialAbility": "Coordenador técnico de Programação de Jogos Digitais. Eventos de jogos.",
+    "sideQuests": [
+      "Pesquisador em IA no planejamento de cidades e meio ambiente"
+    ],
+    "funFact": "Ninguém ganha de mim no Clash Royale :)",
+    "disciplinas": [],
+    "lider": true
+  },
+  {
+    "nome": "Katiuske Corrêa Ferreira",
+    "foto": "/mentores/katiuske-correa-ferreira.webp",
+    "cargo": "professor",
+    "classe": "PREENCHER",
+    "skills": [],
+    "specialAbility": "PREENCHER",
+    "sideQuests": [],
+    "funFact": "PREENCHER",
+    "disciplinas": [
+      "Iniciação Científica (1º H)",
+      "Empresas Pedagógicas (3º F)"
+    ],
+    "lider": false
+  },
+  {
+    "nome": "Robin Bryan",
+    "foto": "/mentores/robin-bryan.webp",
+    "cargo": "professor",
+    "classe": "Godot Engine Architect & Game Developer",
+    "skills": [
+      "Gestão da Tecnologia da Informação",
+      "Pós-graduado em Computação Forense e Segurança da Informação",
+      "Pós-graduado em Docência (Educação Profissional e Ensino Técnico)",
+      "Licenciado em Artes Visuais e Matemática"
+    ],
+    "specialAbility": "\"Master of the Engine\": domínio total e absoluto da Godot Engine, com a habilidade passiva de transitar entre a lógica matemática e o design visual com perfeição.",
+    "sideQuests": [
+      "Streamer e criador de conteúdo no YouTube"
+    ],
+    "funFact": "Apesar de jogar LoL quase todo dia, eu não saio do bronze :(",
+    "disciplinas": [],
+    "lider": false
+  },
+  {
+    "nome": "Guilherme Nogueira",
+    "foto": "/mentores/guilherme-nogueira.webp",
+    "cargo": "professor",
+    "classe": "Game Designer, Modelador 3D, Programador e Professor",
+    "skills": [
+      "Tecnólogo em Jogos Digitais",
+      "Pós-graduado em Docência para Educação Profissional"
+    ],
+    "specialAbility": "Game dev generalista: entendo como são todos os processos de criação e desenvolvimento de um jogo.",
+    "sideQuests": [
+      "CEO da Jacaré Digital Games"
+    ],
+    "funFact": "Alguns me chamam de Saitama por conta do cosplay que fiz. Meu jogo favorito: Skyrim. Já fui diamante no LoL na season 5 e AK cruzada no CS:GO.",
+    "disciplinas": [],
+    "lider": false
+  },
+  {
+    "nome": "Leonardo Sonchini Silva",
+    "foto": "/mentores/leonardo-sonchini-silva.webp",
+    "cargo": "professor",
+    "classe": "Gestor em Tecnologia da Informação",
+    "skills": [
+      "Engenharia da Computação",
+      "Pós-graduação em Gestão e Governança de TI",
+      "Pós-graduação em Informática para Educação",
+      "Licenciatura em História"
+    ],
+    "specialAbility": "Resolução de problemas de alto fluxo.",
+    "sideQuests": [
+      "Empresário, dono da GTI (Gestão em Tecnologia da Informação)"
+    ],
+    "funFact": "Jogo Valorant, FIFA e Fórmula 1. Atualmente platina no Vava, apaixonado pelo Corinthians e curto muito viajar.",
+    "disciplinas": [],
+    "lider": false
+  },
+  {
+    "nome": "Thaysa Rafaele",
+    "foto": "/mentores/thaysa-rafaele.webp",
+    "cargo": "professor",
+    "classe": "Desenvolvimento de Software Web",
+    "skills": [
+      "Mestranda em Computação Aplicada (UFMS)",
+      "Residente da especialização em Engenharia de Software Inteligente (UFMS)",
+      "Graduada em Tecnologia da Informação",
+      "Pós-graduada em Gestão e Liderança em TI",
+      "Pós-graduada em Docência no Ensino Médio e Superior",
+      "Licenciada em Matemática",
+      "Formação em Frontend pela Ada Tech e Ignite ReactJS pela Rocketseat"
+    ],
+    "specialAbility": "Transformo problemas complexos em interfaces intuitivas. Especialista em frontend.",
+    "sideQuests": [
+      "Desenvolvedora fullstack na residência do Laboratório de Inovação da PGE-MS",
+      "Mentora em programas de inclusão feminina em tecnologia",
+      "Mentorias particulares de programação"
+    ],
+    "funFact": "Viciada em café, mãe de 2 crianças maravilhosas e apaixonada por crochê.",
+    "disciplinas": [],
+    "lider": false
+  }
+]
