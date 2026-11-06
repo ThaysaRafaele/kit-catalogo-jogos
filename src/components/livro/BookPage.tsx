@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { LOGO_CURSO, LOGO_ESCOLA } from "@/lib/marca";
 import type { ContextoLivro, PaginaLivro } from "@/lib/paginas";
 import { CapaDireita, CapaEsquerda } from "./telas/Capa";
@@ -18,7 +19,8 @@ function Rodape({ numero, direita }: { numero: number; direita: boolean }) {
   );
 }
 
-function Conteudo({ s, side, ctx }: Props) {
+// O tipo de retorno faz o TypeScript acusar uma tela nova que ficou sem "case".
+function Conteudo({ s, side, ctx }: Props): ReactElement {
   switch (s.kind) {
     case "cover":
       return side === "L" ? <CapaEsquerda ctx={ctx} /> : <CapaDireita ctx={ctx} />;

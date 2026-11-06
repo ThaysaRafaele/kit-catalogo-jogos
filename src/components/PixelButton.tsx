@@ -1,3 +1,5 @@
+"use client";
+
 type Variante = "primary" | "secondary" | "small" | "chip" | "toggle";
 
 type Props = {
@@ -29,7 +31,7 @@ export function PixelButton({
   return (
     <button
       type="button"
-      onClick={onPress}
+      onClick={() => onPress?.()}
       disabled={disabled}
       aria-pressed={alternavel ? pressed : undefined}
       aria-label={ariaLabel}
