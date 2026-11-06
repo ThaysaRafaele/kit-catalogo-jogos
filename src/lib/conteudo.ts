@@ -97,6 +97,7 @@ function carregarEdicoes(avisos: string[]): EdicaoCompleta[] {
   const anos = readdirSync(PASTA_EDICOES, { withFileTypes: true })
     .filter((item) => item.isDirectory() && /^\d{4}$/.test(item.name))
     .map((item) => item.name)
+    .filter((ano) => existsSync(path.join(PASTA_EDICOES, ano, "edicao.json")))
     .sort();
 
   return anos.map((ano) => {
@@ -135,5 +136,6 @@ export function buscarEdicao(ano: string): EdicaoCompleta | undefined {
 }
 
 export function edicaoMaisRecente(): EdicaoCompleta {
-  return carregarConteudo().edicoes.at(-1)!;
+  const { edicoes } = carregarConteudo();
+  return edicoes.findLast((e) => e.jogos.length > 0) ?? edicoes.at(-1)!;
 }

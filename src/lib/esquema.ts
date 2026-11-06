@@ -57,7 +57,8 @@ export const jogoSchema = z.object({
   desafio: z.string(),
   solucao: z.string(),
   equipe: z.array(z.object({ nome: z.string(), funcao: z.string() })),
-  link: z.string().optional(),
+  // Texto vazio é o "PREENCHER" já limpo: o botão de jogar não aparece.
+  link: z.url({ protocol: /^https?$/ }).or(z.literal("")).optional(),
   autorizacaoImagem: z.boolean(),
 });
 
