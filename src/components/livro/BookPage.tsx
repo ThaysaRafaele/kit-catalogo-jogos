@@ -1,0 +1,36 @@
+import { LOGO_CURSO, LOGO_ESCOLA } from "@/lib/marca";
+import type { ContextoLivro, PaginaLivro } from "@/lib/paginas";
+import { CapaDireita, CapaEsquerda } from "./telas/Capa";
+
+type Props = { s: PaginaLivro; side: "L" | "R"; ctx: ContextoLivro };
+
+/** Rodapé decorativo: o número da página também é anunciado pelo livro. */
+function Rodape({ numero, direita }: { numero: number; direita: boolean }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`absolute right-6 bottom-5 left-6 flex items-center gap-2 ${direita ? "flex-row-reverse" : ""}`}
+    >
+      <img src={LOGO_ESCOLA.rodape} alt="" className="block size-6 object-contain" />
+      <img src={LOGO_CURSO.rodape} alt="" className="block size-6 object-contain" />
+      <span className="font-press text-xs text-[#5a3a2c]">{String(numero).padStart(2, "0")}</span>
+    </div>
+  );
+}
+
+function Conteudo({ s, side, ctx }: Props) {
+  switch (s.kind) {
+    case "cover":
+      return side === "L" ? <CapaEsquerda ctx={ctx} /> : <CapaDireita ctx={ctx} />;
+  }
+}
+
+export function BookPage({ s, side, ctx }: Props) {
+  const direita = side === "R";
+  return (
+    <div className="page relative h-full bg-papel">
+      <Conteudo s={s} side={side} ctx={ctx} />
+      <Rodape numero={s.idx * 2 + (direita ? 2 : 1)} direita={direita} />
+    </div>
+  );
+}
