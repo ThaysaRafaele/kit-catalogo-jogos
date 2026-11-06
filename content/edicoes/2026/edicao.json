@@ -1,0 +1,15 @@
+{
+  "ano": 2026,
+  "titulo": "Mostra Cultural • LEVEL UP 2026",
+  "textoAbertura": "PREENCHER",
+  "turmas": [{ "id": "2G" }],
+  "creditos": [
+    { "funcao": "Coordenação", "nome": "Jean Bites" },
+    {
+      "funcao": "Professores",
+      "nome": "Katiuske Corrêa Ferreira, Robin Bryan, Guilherme Nogueira, Leonardo Sonchini Silva, Thaysa Rafaele"
+    },
+    { "funcao": "Escola", "nome": "CEEP Hércules Maymone" },
+    { "funcao": "Cidade", "nome": "Campo Grande, MS" }
+  ]
+}

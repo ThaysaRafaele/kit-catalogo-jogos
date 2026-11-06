@@ -1,0 +1,57 @@
+{
+  "slug": "heaven-runner",
+  "turma": "2G",
+  "estudio": "Os três maiores",
+  "nome": "Heaven Runner",
+  "tema": "folclore",
+  "genero": "Aventura, corrida infinita, 3D",
+  "plataforma": "Celular e PC",
+  "frase": "Uma aventura pelos céus para recuperar o Cajado Celeste.",
+  "sinopse": "Safira, uma anja celeste, recebe a missão de recuperar um cajado roubado pelos demônios durante uma batalha. Ao roubar o cajado de volta, entra numa corrida pelos céus fugindo de Lúcifer, que a persegue desde o submundo. Quanto mais longe vai, mais rápido voa, e mais difícil fica desviar dos obstáculos. Se colidir, será capturada.",
+  "protagonista": {
+    "nome": "Safira",
+    "quemE": "Anja de cabelos loiros, com asas que mudam conforme a skin liberada e um forte desejo de completar a missão.",
+    "habilidadeEspecial": "Regeneração e afastamento de inimigos.",
+    "desenho": {
+      "src": "/edicoes/2026/heaven-runner/protagonista.webp",
+      "alt": "Safira, anja de cabelos loiros com asas."
+    }
+  },
+  "antagonista": {
+    "nome": "Lúcifer",
+    "motivacao": "Recuperar o cajado que ele havia roubado e Safira recuperou.",
+    "relacaoProtagonista": "Inimigos mortais.",
+    "desenho": {
+      "src": "/edicoes/2026/heaven-runner/antagonista.webp",
+      "alt": "Lúcifer, o antagonista que persegue Safira desde o submundo."
+    }
+  },
+  "mundo": {
+    "lugar": "Céu",
+    "epoca": "Indefinida",
+    "caracteristicas": [
+      "Cores claras",
+      "Nuvens e templos",
+      "Elementos do Céu descrito pelas religiões"
+    ],
+    "clima": "Celestial",
+    "inspiracao": "O Céu descrito por religiões cristãs",
+    "desenho": {
+      "src": "/edicoes/2026/heaven-runner/mundo.webp",
+      "alt": "O Céu em cores claras, com nuvens e templos."
+    }
+  },
+  "controles": [
+    { "acao": "Saltar, deslizar e desviar", "teclas": ["W", "A", "S", "D"] },
+    { "acao": "Saltar, deslizar e desviar (alternativo)", "teclas": ["←", "↑", "→", "↓"] },
+    { "acao": "Coletar esferas celestiais de poder (automático ao passar)", "teclas": [] }
+  ],
+  "desafio": "Resolver os bugs técnicos do código.",
+  "solucao": "Usaram a ajuda de IAs como o Antigravity.",
+  "equipe": [
+    { "nome": "Vitória", "funcao": "Programadora" },
+    { "nome": "Guilherme", "funcao": "Redator" },
+    { "nome": "Pedro", "funcao": "Idealizador e ambientador" }
+  ],
+  "autorizacaoImagem": true
+}

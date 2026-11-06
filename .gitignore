@@ -1,1 +1,16 @@
 /PROMPT.md
+
+# dependências e build
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# fichas originais (PDFs e fotos), fora do build
+entradas/
+
+# originais das fotos dos mentores: só o .webp vai para o site
+public/mentores/*.jpeg
+public/mentores/*.jpg
+public/mentores/*.png
