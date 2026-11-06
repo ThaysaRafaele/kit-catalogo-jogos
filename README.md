@@ -6,7 +6,7 @@ Edição atual: **Mostra Cultural • LEVEL UP 2026**.
 
 O site é 100% estático e usa só serviços gratuitos. **Não há banco de dados:** todo o conteúdo fica em arquivos JSON neste repositório e é validado a cada build.
 
-> **Projeto em construção.** Hoje o site mostra apenas a capa, e os botões dela ainda não têm ação. As seções abaixo indicam o que ainda não existe.
+> **Projeto em construção.** Hoje o site mostra só as primeiras telas do livro, em sequência, e os botões delas ainda não têm ação. As seções abaixo indicam o que ainda não existe.
 
 ## Rodar no computador
 
@@ -58,7 +58,7 @@ referencia-design/                protótipo aprovado, a referência do visual
 1. Crie `content/edicoes/<ano>/edicao.json`, usando o de 2026 como modelo.
 2. Adicione os jogos em `content/edicoes/<ano>/jogos/`.
 
-A página inicial abre a edição mais recente que tenha pelo menos um jogo. Uma pasta de ano sem `edicao.json` é ignorada.
+A página inicial abre a edição mais recente que tenha pelo menos um jogo. Na tela de seleção, uma edição sem jogos aparece como "Slot vazio". Uma pasta de ano sem `edicao.json` é ignorada.
 
 ## Importar as fichas
 
