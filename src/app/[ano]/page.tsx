@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Cenario } from "@/components/Cenario";
 import { BookPage } from "@/components/livro/BookPage";
 import { buscarEdicao, carregarConteudo } from "@/lib/conteudo";
-import { montarPaginas } from "@/lib/paginas";
+import { montarPaginas, montarSaves } from "@/lib/paginas";
 
 type Props = { params: Promise<{ ano: string }> };
 
@@ -20,9 +20,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Provisório: mostra as telas prontas em sequência, até o folhear entrar na parte 10.
 export default async function PaginaEdicao({ params }: Props) {
-  const edicao = buscarEdicao((await params).ano);
+  const { ano } = await params;
+  const { edicoes } = carregarConteudo();
+  const edicao = edicoes.find((e) => String(e.ano) === ano);
   if (!edicao) notFound();
-  const ctx = { ano: edicao.ano };
+  const ctx = { ano: edicao.ano, saves: montarSaves(edicoes, edicao.ano) };
 
   return (
     <Cenario>

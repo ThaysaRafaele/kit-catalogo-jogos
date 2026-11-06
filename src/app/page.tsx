@@ -15,7 +15,9 @@ export default function Inicio() {
       <main className="flex flex-1 flex-col items-center gap-4 px-4 pt-16 text-center">
         <h1 className="font-press text-2xl leading-snug text-vinho">Catálogo dos Jogos</h1>
         <p className="text-lg">
-          <a href={`/${ano}`}>Abrir a edição {ano}</a>
+          <a href={`/${ano}`} className="underline">
+            Abrir a edição {ano}
+          </a>
         </p>
       </main>
     </Cenario>

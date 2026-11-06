@@ -1,7 +1,8 @@
 import type { ReactElement } from "react";
 import { LOGO_CURSO, LOGO_ESCOLA } from "@/lib/marca";
-import type { ContextoLivro, PaginaLivro } from "@/lib/paginas";
+import { doisDigitos, type ContextoLivro, type PaginaLivro } from "@/lib/paginas";
 import { CapaDireita, CapaEsquerda } from "./telas/Capa";
+import { SaveDireita, SaveEsquerda } from "./telas/Save";
 
 type Props = { s: PaginaLivro; side: "L" | "R"; ctx: ContextoLivro };
 
@@ -14,7 +15,7 @@ function Rodape({ numero, direita }: { numero: number; direita: boolean }) {
     >
       <img src={LOGO_ESCOLA.rodape} alt="" className="block size-6 object-contain" />
       <img src={LOGO_CURSO.rodape} alt="" className="block size-6 object-contain" />
-      <span className="font-press text-xs text-[#5a3a2c]">{String(numero).padStart(2, "0")}</span>
+      <span className="font-press text-xs text-[#5a3a2c]">{doisDigitos(numero)}</span>
     </div>
   );
 }
@@ -24,6 +25,8 @@ function Conteudo({ s, side, ctx }: Props): ReactElement {
   switch (s.kind) {
     case "cover":
       return side === "L" ? <CapaEsquerda ctx={ctx} /> : <CapaDireita ctx={ctx} />;
+    case "save":
+      return side === "L" ? <SaveEsquerda /> : <SaveDireita ctx={ctx} />;
   }
 }
 
