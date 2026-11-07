@@ -34,14 +34,14 @@ export function ThemeBadge({ tema }: { tema: Tema }) {
 
   return (
     <span
-      className="inline-flex items-center gap-2.5 rounded-lg border-[3px] px-3.5 py-2 font-pixelify text-lg leading-[1.2] font-bold"
+      className="inline-flex items-center gap-2.5 rounded-lg border-[3px] px-3.5 py-2 font-pixelify text-lg leading-[1.2] font-medium"
       style={{ background, color, borderColor: borda, boxShadow: `0 4px 0 ${sombra}` }}
     >
       <svg width="24" height="24" viewBox="0 0 8 8" shapeRendering="crispEdges" aria-hidden="true">
         {icone}
       </svg>
       <span>
-        <span className="font-semibold">Tema: </span>
+        <span>Tema: </span>
         {TEMAS[tema].nome}
       </span>
     </span>

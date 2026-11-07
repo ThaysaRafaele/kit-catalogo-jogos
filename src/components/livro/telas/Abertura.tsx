@@ -18,7 +18,7 @@ export function AberturaEsquerda({ ctx }: { ctx: ContextoLivro }) {
       </p>
       {ctx.edicao.textoAbertura && (
         <div className="rounded-xl border-4 border-tinta bg-papel-claro px-5 py-[18px] shadow-bloco">
-          <h3 className="mb-2 font-pixelify text-lg font-bold text-vinho uppercase">Missão principal</h3>
+          <h3 className="mb-2 font-pixelify text-lg font-medium text-vinho uppercase">Missão principal</h3>
           <p className="text-[17px] leading-[1.6]">{ctx.edicao.textoAbertura}</p>
         </div>
       )}
@@ -37,12 +37,12 @@ export function AberturaDireita({ ctx }: { ctx: ContextoLivro }) {
         Personagens e cenários deste catálogo foram desenhados à mão e depois escaneados, ou feitos no
         computador, por pixel art.
       </p>
-      <h3 className="mt-1 font-pixelify text-xl font-bold">Temas desta edição</h3>
+      <h3 className="mt-1 font-pixelify text-xl font-medium">Temas desta edição</h3>
       <div className="flex flex-col items-start gap-3">
         <ThemeBadge tema="folclore" />
         <ThemeBadge tema="scifi" />
       </div>
-      <h3 className="mt-2 font-pixelify text-xl font-bold">Como ler este livro</h3>
+      <h3 className="mt-2 font-pixelify text-xl font-medium">Como ler este livro</h3>
       <ul className="list-disc pl-[22px] text-[17px] leading-[1.7]">
         <li>Botões Voltar e Continue folheiam as páginas.</li>
         <li>Também dá para arrastar o canto da página com o mouse ou o dedo.</li>

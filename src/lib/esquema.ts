@@ -77,7 +77,7 @@ export const mentoresSchema = z.array(
     funFact: z.string(),
     disciplinas: z.array(z.string()).default([]),
   }),
-);
+).refine((mentores) => new Set(mentores.map((m) => m.nome)).size === mentores.length, "mentor repetido");
 
 export type Edicao = z.infer<typeof edicaoSchema>;
 export type Jogo = z.infer<typeof jogoSchema>;

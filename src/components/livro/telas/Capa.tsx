@@ -9,7 +9,7 @@ export function CapaEsquerda({ ctx }: { ctx: ContextoLivro }) {
         <LogoEscola tamanho={140} />
         <LogoCurso tamanho={136} />
       </div>
-      <p className="font-pixelify text-[17px] font-semibold tracking-[1px] text-vinho uppercase">
+      <p className="font-pixelify text-[17px] font-medium tracking-[1px] text-vinho uppercase">
         Mostra Cultural • CEEP Hércules Maymone
       </p>
       <h1 className="font-press text-[52px] leading-[1.3] text-vinho uppercase [text-shadow:5px_5px_0_var(--color-laranja-claro)]">
@@ -19,7 +19,7 @@ export function CapaEsquerda({ ctx }: { ctx: ContextoLivro }) {
       <p className="rounded-[10px] border-4 border-tinta bg-laranja px-5 py-3 font-press text-2xl text-tinta shadow-bloco">
         {ctx.edicao.ano}
       </p>
-      <p className="mt-1.5 font-pixelify text-[30px] font-bold text-madeira">Catálogo dos Jogos</p>
+      <p className="mt-1.5 font-pixelify text-[30px] font-medium text-madeira">Catálogo dos Jogos</p>
       <p className="max-w-[360px] text-lg">Curso de Programação de Jogos Digitais • Campo Grande, MS</p>
     </div>
   );

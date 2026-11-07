@@ -1,6 +1,6 @@
 import type { Mentor } from "@/lib/esquema";
 
-const ROTULO = "font-pixelify text-[15px] font-bold text-vinho uppercase";
+const ROTULO = "font-pixelify text-[15px] font-medium text-vinho uppercase";
 
 function ListaMarcada({ titulo, itens }: { titulo: string; itens: string[] }) {
   if (itens.length === 0) return null;
@@ -58,9 +58,9 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
             )}
           </div>
           <div className="flex min-w-[150px] flex-1 flex-col gap-2">
-            <h3 className="font-pixelify text-[22px] leading-[1.2] font-bold text-tinta">{nome}</h3>
+            <h3 className="font-pixelify text-[22px] leading-[1.2] font-medium text-tinta">{nome}</h3>
             {classe && (
-              <p className="inline-flex flex-wrap gap-x-1.5 self-start rounded-md bg-madeira px-2.5 py-[5px] font-pixelify text-[15px] font-bold wrap-anywhere text-papel">
+              <p className="inline-flex flex-wrap gap-x-1.5 self-start rounded-md bg-madeira px-2.5 py-[5px] font-pixelify text-[15px] font-medium wrap-anywhere text-papel">
                 <span className="text-laranja-claro uppercase">
                   Classe<span className="sr-only">: </span>
                 </span>
@@ -99,7 +99,7 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
               <path className="fill-ouro" d="M3 0h1v2h3v1h-1v1h1v3h-1v-1h-1v-1h-1v1h-1v1h-1v-3h1v-1h-1v-1h3z" />
             </svg>
             <div>
-              <p className="font-pixelify text-[15px] font-bold text-ouro uppercase">Special ability</p>
+              <p className="font-pixelify text-[15px] font-medium text-ouro uppercase">Special ability</p>
               <p className="mt-1 text-base leading-[1.5]">{specialAbility}</p>
             </div>
           </div>
