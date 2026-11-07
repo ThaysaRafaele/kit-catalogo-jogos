@@ -47,7 +47,7 @@ type PropsGrupo<T> = {
 function GrupoFiltro<T>({ nome, opcoes, valor, onChange }: PropsGrupo<T>) {
   return (
     <div role="group" aria-label={`Filtrar por ${nome.toLowerCase()}`} className="flex flex-col gap-2.5">
-      <p aria-hidden="true" className="font-pixelify text-lg font-bold">
+      <p aria-hidden="true" className="font-pixelify text-lg font-medium">
         {nome}
       </p>
       <div className="flex flex-wrap gap-2.5">
@@ -119,7 +119,7 @@ export function MapaDeFases() {
         <li key={f.slug}>
           <a
             href={`#${f.slug}`}
-            className="flex items-center gap-3.5 rounded-[14px] border-4 border-tinta bg-papel-claro p-3.5 text-texto shadow-[0_5px_0_var(--color-tinta)]"
+            className="cartao-fase flex items-center gap-3.5 p-3.5"
           >
             <span
               aria-hidden="true"

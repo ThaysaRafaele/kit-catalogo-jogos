@@ -7,6 +7,7 @@ import { CapaDireita, CapaEsquerda } from "./telas/Capa";
 import { ListaMentores, MentoresAbertura } from "./telas/Mentores";
 import { SaveDireita, SaveEsquerda } from "./telas/Save";
 import { SumarioDireita, SumarioEsquerda } from "./telas/Sumario";
+import { TurmaDireita, TurmaEsquerda } from "./telas/Turma";
 
 type Props = { s: PaginaLivro; side: "L" | "R"; ctx: ContextoLivro };
 
@@ -43,6 +44,8 @@ function Conteudo({ s, side, ctx }: Props): ReactElement {
       );
     case "mentorsCont":
       return <ListaMentores mentores={side === "L" ? s.esquerda : s.direita} />;
+    case "turma":
+      return side === "L" ? <TurmaEsquerda s={s} /> : <TurmaDireita s={s} />;
   }
 }
 

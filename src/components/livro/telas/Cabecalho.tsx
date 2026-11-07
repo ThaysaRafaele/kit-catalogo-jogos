@@ -11,7 +11,7 @@ type Props = {
 export function Cabecalho({ rotulo, className, children }: Props) {
   return (
     <>
-      <p className="font-pixelify text-base font-semibold text-vinho uppercase">{rotulo}</p>
+      <p className="font-pixelify text-base font-medium text-vinho uppercase">{rotulo}</p>
       <h2 className={`font-press text-vinho uppercase ${className}`}>{children}</h2>
     </>
   );
