@@ -1,6 +1,7 @@
-import { NOME_TEMA, type Tema } from "@/lib/esquema";
+import type { Tema } from "@/lib/esquema";
+import { TEMAS } from "@/lib/temas";
 
-const TEMAS = {
+const ESTILOS = {
   folclore: {
     background: "#2e4a1f",
     color: "#ffffff",
@@ -29,7 +30,7 @@ const TEMAS = {
 } satisfies Record<Tema, object>;
 
 export function ThemeBadge({ tema }: { tema: Tema }) {
-  const { background, color, borda, sombra, icone } = TEMAS[tema];
+  const { background, color, borda, sombra, icone } = ESTILOS[tema];
 
   return (
     <span
@@ -41,7 +42,7 @@ export function ThemeBadge({ tema }: { tema: Tema }) {
       </svg>
       <span>
         <span className="font-semibold">Tema: </span>
-        {NOME_TEMA[tema]}
+        {TEMAS[tema].nome}
       </span>
     </span>
   );

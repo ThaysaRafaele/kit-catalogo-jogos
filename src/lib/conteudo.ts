@@ -34,21 +34,22 @@ function vazio(valor: unknown): boolean {
 }
 
 /**
- * Prepara o JSON para a validação, registrando um aviso para cada pendência:
- * campo com "PREENCHER" e imagem que não existe em public/ viram texto vazio,
- * e itens sem conteúdo saem das listas. As telas não exibem o que ficou vazio.
+ * Prepara o JSON para a validação: apara os textos e registra um aviso para cada
+ * pendência. Campo com "PREENCHER" e imagem que não existe em public/ viram texto
+ * vazio, e itens sem conteúdo saem das listas. As telas não exibem o que ficou vazio.
  */
 function limpar(atual: unknown, caminho: string, chave: string, avisos: string[]): unknown {
   if (typeof atual === "string") {
-    if (atual.includes(MARCADOR_VAZIO)) {
+    const texto = atual.trim();
+    if (texto.includes(MARCADOR_VAZIO)) {
       avisos.push(`${caminho}: campo a preencher`);
       return "";
     }
-    if (CAMINHO_DE_IMAGEM.test(atual) && !existsSync(path.join(RAIZ, "public", atual))) {
-      avisos.push(`${caminho}: imagem não encontrada (${atual}), usando placeholder`);
+    if (CAMINHO_DE_IMAGEM.test(texto) && !existsSync(path.join(RAIZ, "public", texto))) {
+      avisos.push(`${caminho}: imagem não encontrada (${texto}), usando placeholder`);
       return "";
     }
-    return atual;
+    return texto;
   }
   if (Array.isArray(atual)) {
     if (atual.length === 0 && !LISTAS_OPCIONAIS.has(chave)) {

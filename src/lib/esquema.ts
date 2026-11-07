@@ -5,21 +5,23 @@ export const MARCADOR_VAZIO = "PREENCHER";
 
 const desenho = z.object({
   src: z.string(),
-  alt: z.string().trim().min(1, "todo desenho precisa de alt"),
+  alt: z.string().min(1, "todo desenho precisa de alt"),
 });
 
 export const edicaoSchema = z.object({
   ano: z.number().int(),
-  titulo: z.string().trim().min(1, "toda edição precisa de título"),
-  textoAbertura: z.string().trim(),
+  titulo: z.string().min(1, "toda edição precisa de título"),
+  textoAbertura: z.string(),
   agradecimento: z.string().optional(),
-  turmas: z.array(
-    z.object({
-      id: z.string().min(1),
-      lema: z.string().optional(),
-      mentor: z.string().optional(),
-    }),
-  ),
+  turmas: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        lema: z.string().optional(),
+        mentor: z.string().optional(),
+      }),
+    )
+    .refine((turmas) => new Set(turmas.map((t) => t.id)).size === turmas.length, "turma repetida"),
   creditos: z.array(z.object({ funcao: z.string(), nome: z.string() })),
 });
 
@@ -27,7 +29,7 @@ export const jogoSchema = z.object({
   slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "use minúsculas, números e hífens"),
   turma: z.string(),
   estudio: z.string(),
-  nome: z.string(),
+  nome: z.string().min(1, "todo jogo precisa de nome"),
   tema: z.enum(["folclore", "scifi"]),
   genero: z.string(),
   plataforma: z.string(),
@@ -81,8 +83,3 @@ export type Edicao = z.infer<typeof edicaoSchema>;
 export type Jogo = z.infer<typeof jogoSchema>;
 export type Mentor = z.infer<typeof mentoresSchema>[number];
 export type Tema = Jogo["tema"];
-
-export const NOME_TEMA: Record<Tema, string> = {
-  folclore: "Folclore e Lendas Urbanas",
-  scifi: "Ficção Científica Retrofuturista",
-};

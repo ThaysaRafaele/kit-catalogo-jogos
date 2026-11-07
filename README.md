@@ -43,8 +43,8 @@ referencia-design/                protótipo aprovado, a referência do visual
 
 ### Como o conteúdo é validado
 
-- **Erro que interrompe o build:** JSON malformado, campo obrigatório ausente, desenho sem `alt`, `link` que não começa com `http` ou `https`, turma que não existe na edição, ou `slug` diferente do nome do arquivo.
-- **Aviso que não interrompe:** campo com `PREENCHER`, lista vazia ou imagem que não existe. Esses itens não aparecem no site, e a imagem que falta vira um espaço reservado.
+- **Erro que interrompe o build:** JSON malformado, campo obrigatório ausente, edição sem título, jogo sem nome, turma repetida, desenho sem `alt`, `link` que não começa com `http` ou `https`, turma que não existe na edição, ou `slug` diferente do nome do arquivo.
+- **Aviso que não interrompe:** `PREENCHER` nos demais campos, lista vazia ou imagem que não existe. `PREENCHER` conta como vazio, então nos campos da regra anterior ele interrompe o build. Uma turma ou um item de lista sem nenhum conteúdo sai da lista. Esses itens não aparecem no site, e a imagem que falta vira um espaço reservado.
 - **Autorização de imagem:** o campo `autorizacaoImagem` de cada jogo existe para registrar se os nomes da equipe podem ser publicados. Só use `true` depois de confirmar os termos. *A regra que esconde os nomes quando o valor é `false` ainda será implementada.*
 
 ## Adicionar um jogo

@@ -4,7 +4,7 @@ import { Cenario } from "@/components/Cenario";
 import { BookPage } from "@/components/livro/BookPage";
 import { ProvedorFiltros } from "@/components/livro/telas/FiltrosSumario";
 import { buscarEdicao, carregarConteudo } from "@/lib/conteudo";
-import { montarPaginas, montarSaves } from "@/lib/paginas";
+import { montarFases, montarPaginas, montarSaves } from "@/lib/paginas";
 
 type Props = { params: Promise<{ ano: string }> };
 
@@ -30,7 +30,7 @@ export default async function PaginaEdicao({ params }: Props) {
   return (
     <Cenario>
       <main className="flex-1 px-4 pt-2">
-        <ProvedorFiltros>
+        <ProvedorFiltros fases={montarFases(edicao)}>
           <div className="mx-auto max-w-[1240px]">
             {montarPaginas(edicao).map((s) => (
               <section

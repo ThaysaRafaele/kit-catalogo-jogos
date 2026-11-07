@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
-import { doisDigitos, type ContextoLivro, type SlotSave } from "@/lib/paginas";
+import { doisDigitos } from "@/lib/formato";
+import type { ContextoLivro, SlotSave } from "@/lib/paginas";
 import { Cabecalho } from "./Cabecalho";
 
 export function SaveEsquerda() {
