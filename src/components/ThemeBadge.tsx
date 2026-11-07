@@ -1,4 +1,4 @@
-import type { Tema } from "@/lib/esquema";
+import { NOME_TEMA, type Tema } from "@/lib/esquema";
 
 const TEMAS = {
   folclore: {
@@ -6,7 +6,6 @@ const TEMAS = {
     color: "#ffffff",
     borda: "#7d4fc0",
     sombra: "#3d1f66",
-    texto: "Folclore e Lendas Urbanas",
     icone: (
       <>
         <path fill="#d9c2ff" d="M3 0h3v1h-2v1h-1v4h1v1h2v1h-3v-1h-1v-1h-1v-4h1v-1h1z" />
@@ -19,7 +18,6 @@ const TEMAS = {
     color: "#170a2e",
     borda: "#ff2e93",
     sombra: "#b3126a",
-    texto: "Ficção Científica Retrofuturista",
     icone: (
       <>
         <path fill="#170a2e" d="M3 1h2v1h1v1h1v2h-1v1h-1v1h-2v-1h-1v-1h-1v-2h1v-1h1z" />
@@ -31,7 +29,7 @@ const TEMAS = {
 } satisfies Record<Tema, object>;
 
 export function ThemeBadge({ tema }: { tema: Tema }) {
-  const { background, color, borda, sombra, texto, icone } = TEMAS[tema];
+  const { background, color, borda, sombra, icone } = TEMAS[tema];
 
   return (
     <span
@@ -43,7 +41,7 @@ export function ThemeBadge({ tema }: { tema: Tema }) {
       </svg>
       <span>
         <span className="font-semibold">Tema: </span>
-        {texto}
+        {NOME_TEMA[tema]}
       </span>
     </span>
   );

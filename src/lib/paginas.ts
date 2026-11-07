@@ -1,9 +1,21 @@
 import type { EdicaoCompleta } from "./conteudo.ts";
+import { NOME_TEMA, type Tema } from "./esquema.ts";
 
 /** Os tipos de página dupla do livro. Cada tela nova acrescenta um aqui. */
-type Tela = { kind: "cover" | "save" | "intro"; label: string };
+type Tela = { kind: "cover" | "save" | "intro" | "toc"; label: string };
 
 export type PaginaLivro = Tela & { idx: number };
+
+/** Um jogo no sumário. */
+export type Fase = {
+  /** Mundo (turma com jogos, na ordem da edição) e posição do jogo nele, como "1-2". */
+  fase: string;
+  slug: string;
+  nome: string;
+  turma: string;
+  tema: Tema;
+  temaNome: string;
+};
 
 export type SlotSave = {
   ano: number;
@@ -56,11 +68,29 @@ export function montarSaves(edicoes: EdicaoCompleta[], anoAtual: number): SlotSa
   });
 }
 
+export function montarFases(edicao: EdicaoCompleta): Fase[] {
+  const jogosPorTurma = edicao.turmas
+    .map((turma) => edicao.jogos.filter((jogo) => jogo.turma === turma.id))
+    .filter((jogos) => jogos.length > 0);
+
+  return jogosPorTurma.flatMap((jogos, mundo) =>
+    jogos.map((jogo, posicao) => ({
+      fase: `${mundo + 1}-${posicao + 1}`,
+      slug: jogo.slug,
+      nome: jogo.nome,
+      turma: jogo.turma,
+      tema: jogo.tema,
+      temaNome: NOME_TEMA[jogo.tema],
+    })),
+  );
+}
+
 export function montarPaginas(_edicao: EdicaoCompleta): PaginaLivro[] {
   const telas: Tela[] = [
     { kind: "cover", label: "Capa" },
     { kind: "save", label: "Seleção de edição" },
     { kind: "intro", label: "Abertura" },
+    { kind: "toc", label: "Sumário: seleção de fases" },
   ];
   return telas.map((tela, idx) => ({ ...tela, idx }));
 }

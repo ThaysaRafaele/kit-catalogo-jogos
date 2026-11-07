@@ -4,6 +4,7 @@ import { doisDigitos, type ContextoLivro, type PaginaLivro } from "@/lib/paginas
 import { AberturaDireita, AberturaEsquerda } from "./telas/Abertura";
 import { CapaDireita, CapaEsquerda } from "./telas/Capa";
 import { SaveDireita, SaveEsquerda } from "./telas/Save";
+import { SumarioDireita, SumarioEsquerda } from "./telas/Sumario";
 
 type Props = { s: PaginaLivro; side: "L" | "R"; ctx: ContextoLivro };
 
@@ -30,6 +31,8 @@ function Conteudo({ s, side, ctx }: Props): ReactElement {
       return side === "L" ? <SaveEsquerda /> : <SaveDireita ctx={ctx} />;
     case "intro":
       return side === "L" ? <AberturaEsquerda ctx={ctx} /> : <AberturaDireita ctx={ctx} />;
+    case "toc":
+      return side === "L" ? <SumarioEsquerda ctx={ctx} /> : <SumarioDireita ctx={ctx} />;
   }
 }
 
