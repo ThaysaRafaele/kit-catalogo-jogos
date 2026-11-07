@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // Provisório: mostra as telas prontas em sequência, até o folhear entrar na parte 10.
 export default async function PaginaEdicao({ params }: Props) {
   const { ano } = await params;
-  const { edicoes } = carregarConteudo();
+  const { edicoes, mentores } = carregarConteudo();
   const edicao = edicoes.find((e) => String(e.ano) === ano);
   if (!edicao) notFound();
   const ctx = { edicao, saves: montarSaves(edicoes, edicao.ano) };
@@ -32,7 +32,7 @@ export default async function PaginaEdicao({ params }: Props) {
       <main className="flex-1 px-4 pt-2">
         <ProvedorFiltros fases={montarFases(edicao)}>
           <div className="mx-auto max-w-[1240px]">
-            {montarPaginas(edicao).map((s) => (
+            {montarPaginas(edicao, mentores).map((s) => (
               <section
                 key={s.idx}
                 aria-label={s.label}

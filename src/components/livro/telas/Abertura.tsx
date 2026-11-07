@@ -5,7 +5,7 @@ import { Cabecalho } from "./Cabecalho";
 export function AberturaEsquerda({ ctx }: { ctx: ContextoLivro }) {
   return (
     <div className="flex flex-col gap-[18px]">
-      <Cabecalho rotulo="Tutorial" className="text-[26px]">
+      <Cabecalho rotulo="Tutorial" className="text-[26px]/[1.4]">
         O curso
       </Cabecalho>
       <p className="text-lg leading-[1.65]">
@@ -29,7 +29,7 @@ export function AberturaEsquerda({ ctx }: { ctx: ContextoLivro }) {
 export function AberturaDireita({ ctx }: { ctx: ContextoLivro }) {
   return (
     <div className="flex flex-col gap-[18px]">
-      <Cabecalho rotulo="Evento" className="text-[26px]">
+      <Cabecalho rotulo="Evento" className="text-[26px]/[1.4]">
         A Mostra
       </Cabecalho>
       <p className="text-lg leading-[1.65]">

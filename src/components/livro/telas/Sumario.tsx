@@ -4,7 +4,7 @@ import { FiltrosFases, MapaDeFases } from "./FiltrosSumario";
 export function SumarioEsquerda() {
   return (
     <div className="flex flex-col gap-[18px]">
-      <Cabecalho rotulo="Sumário" className="text-[26px]">
+      <Cabecalho rotulo="Sumário" className="text-[26px]/[1.4]">
         Seleção <br />
         de fases
       </Cabecalho>

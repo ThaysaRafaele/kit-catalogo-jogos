@@ -3,14 +3,14 @@ import { TEMAS } from "@/lib/temas";
 
 const ESTILOS = {
   folclore: {
-    background: "#2e4a1f",
+    background: "var(--color-floresta)",
     color: "#ffffff",
     borda: "#7d4fc0",
     sombra: "#3d1f66",
     icone: (
       <>
         <path fill="#d9c2ff" d="M3 0h3v1h-2v1h-1v4h1v1h2v1h-3v-1h-1v-1h-1v-4h1v-1h1z" />
-        <path fill="#ffe27a" d="M6 3h1v1h-1z" />
+        <path className="fill-ouro" d="M6 3h1v1h-1z" />
       </>
     ),
   },

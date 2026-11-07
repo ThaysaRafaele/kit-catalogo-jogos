@@ -80,7 +80,7 @@ Confira sempre o resultado antes de publicar.
 ## Fotos dos mentores
 
 1. Salve a foto em `public/mentores/` em WebP, com o nome indicado no campo `foto` de `content/mentores.json`. Use só minúsculas: a Vercel diferencia maiúsculas, mesmo quando o Windows não diferencia.
-2. Uma largura de 192 px basta, porque a foto aparece pequena no card.
+2. Recorte a foto em quadrado, com o rosto centralizado. Um lado de 192 px basta, porque ela aparece pequena no card.
 3. Rode `npm run validar`. Mentor sem foto usa o avatar provisório.
 
 Fotos originais em `.jpeg`, `.jpg` ou `.png` nessa pasta ficam fora do repositório.

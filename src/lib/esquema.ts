@@ -75,7 +75,7 @@ export const mentoresSchema = z.array(
     specialAbility: z.string(),
     sideQuests: z.array(z.string()),
     funFact: z.string(),
-    disciplinas: z.array(z.string()).optional(),
+    disciplinas: z.array(z.string()).default([]),
   }),
 );
 
