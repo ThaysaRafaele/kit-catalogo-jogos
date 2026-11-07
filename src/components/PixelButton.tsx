@@ -12,7 +12,7 @@ type Props = {
 };
 
 const LARANJA = { background: "var(--color-laranja)", color: "var(--color-tinta)", sombra: "#c86a0a" };
-const CREME = { background: "#fff1cf", color: "var(--color-madeira)", sombra: "#e0c48c" };
+const CREME = { background: "var(--color-creme)", color: "var(--color-madeira)", sombra: "#e0c48c" };
 
 export function PixelButton({
   label,

@@ -6,7 +6,7 @@ import { Cabecalho } from "./Cabecalho";
 export function SaveEsquerda() {
   return (
     <div className="flex flex-col gap-5">
-      <Cabecalho rotulo="Arquivo do catálogo" className="text-[30px]">
+      <Cabecalho rotulo="Arquivo do catálogo" className="text-[30px]/[1.4]">
         Select <br />
         save file
       </Cabecalho>

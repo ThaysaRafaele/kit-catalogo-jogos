@@ -1,9 +1,11 @@
 import type { EdicaoCompleta } from "./conteudo.ts";
-import type { Tema } from "./esquema.ts";
+import type { Mentor, Tema } from "./esquema.ts";
 import { contar } from "./formato.ts";
 
 /** Os tipos de página dupla do livro. Cada tela nova acrescenta um aqui. */
-type Tela = { kind: "cover" | "save" | "intro" | "toc"; label: string };
+type Tela =
+  | { kind: "cover" | "save" | "intro" | "toc"; label: string }
+  | { kind: "mentors" | "mentorsCont"; label: string; esquerda: Mentor[]; direita: Mentor[] };
 
 export type PaginaLivro = Tela & { idx: number };
 
@@ -74,12 +76,35 @@ export function montarFases(edicao: EdicaoCompleta): Fase[] {
   );
 }
 
-export function montarPaginas(_edicao: EdicaoCompleta): PaginaLivro[] {
+const MENTORES_POR_PAGINA = 2;
+
+/** Líderes na primeira página; os demais, em duplas, continuam em quantas páginas forem precisas. */
+function telasDeMentores(mentores: Mentor[]): Tela[] {
+  const professores = mentores.filter((m) => !m.lider);
+  const paginas = [mentores.filter((m) => m.lider)];
+  for (let i = 0; i < professores.length; i += MENTORES_POR_PAGINA) {
+    paginas.push(professores.slice(i, i + MENTORES_POR_PAGINA));
+  }
+
+  const telas: Tela[] = [];
+  for (let i = 0; i < paginas.length; i += 2) {
+    telas.push({
+      kind: i === 0 ? "mentors" : "mentorsCont",
+      label: i === 0 ? "Seu time de mentores" : "Seu time de mentores, continuação",
+      esquerda: paginas[i],
+      direita: paginas[i + 1] ?? [],
+    });
+  }
+  return telas;
+}
+
+export function montarPaginas(_edicao: EdicaoCompleta, mentores: Mentor[]): PaginaLivro[] {
   const telas: Tela[] = [
     { kind: "cover", label: "Capa" },
     { kind: "save", label: "Seleção de edição" },
     { kind: "intro", label: "Abertura" },
     { kind: "toc", label: "Sumário: seleção de fases" },
+    ...telasDeMentores(mentores),
   ];
   return telas.map((tela, idx) => ({ ...tela, idx }));
 }

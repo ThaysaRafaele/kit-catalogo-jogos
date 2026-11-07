@@ -4,6 +4,7 @@ import { doisDigitos } from "@/lib/formato";
 import type { ContextoLivro, PaginaLivro } from "@/lib/paginas";
 import { AberturaDireita, AberturaEsquerda } from "./telas/Abertura";
 import { CapaDireita, CapaEsquerda } from "./telas/Capa";
+import { ListaMentores, MentoresAbertura } from "./telas/Mentores";
 import { SaveDireita, SaveEsquerda } from "./telas/Save";
 import { SumarioDireita, SumarioEsquerda } from "./telas/Sumario";
 
@@ -34,6 +35,14 @@ function Conteudo({ s, side, ctx }: Props): ReactElement {
       return side === "L" ? <AberturaEsquerda ctx={ctx} /> : <AberturaDireita ctx={ctx} />;
     case "toc":
       return side === "L" ? <SumarioEsquerda /> : <SumarioDireita />;
+    case "mentors":
+      return side === "L" ? (
+        <MentoresAbertura mentores={s.esquerda} />
+      ) : (
+        <ListaMentores mentores={s.direita} />
+      );
+    case "mentorsCont":
+      return <ListaMentores mentores={side === "L" ? s.esquerda : s.direita} />;
   }
 }
 
