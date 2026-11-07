@@ -10,8 +10,8 @@ const desenho = z.object({
 
 export const edicaoSchema = z.object({
   ano: z.number().int(),
-  titulo: z.string(),
-  textoAbertura: z.string(),
+  titulo: z.string().trim().min(1, "toda edição precisa de título"),
+  textoAbertura: z.string().trim(),
   agradecimento: z.string().optional(),
   turmas: z.array(
     z.object({
@@ -81,3 +81,8 @@ export type Edicao = z.infer<typeof edicaoSchema>;
 export type Jogo = z.infer<typeof jogoSchema>;
 export type Mentor = z.infer<typeof mentoresSchema>[number];
 export type Tema = Jogo["tema"];
+
+export const NOME_TEMA: Record<Tema, string> = {
+  folclore: "Folclore e Lendas Urbanas",
+  scifi: "Ficção Científica Retrofuturista",
+};
