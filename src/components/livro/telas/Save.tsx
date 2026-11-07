@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
-import { doisDigitos, type ContextoLivro, type SlotSave } from "@/lib/paginas";
+import { doisDigitos } from "@/lib/formato";
+import type { ContextoLivro, SlotSave } from "@/lib/paginas";
 import { Cabecalho } from "./Cabecalho";
 
 export function SaveEsquerda() {
@@ -65,7 +66,7 @@ function Slot({ save, numero, onAtual }: PropsSlot): ReactElement {
   switch (save.estado) {
     case "atual":
       return (
-        <button type="button" onClick={onAtual} className={`${CARTAO} cursor-pointer`}>
+        <button type="button" aria-current="true" onClick={onAtual} className={`${CARTAO} cursor-pointer`}>
           <ConteudoSlot save={save} numero={numero} />
         </button>
       );

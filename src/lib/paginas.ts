@@ -1,9 +1,21 @@
 import type { EdicaoCompleta } from "./conteudo.ts";
+import type { Tema } from "./esquema.ts";
+import { contar } from "./formato.ts";
 
 /** Os tipos de página dupla do livro. Cada tela nova acrescenta um aqui. */
-type Tela = { kind: "cover" | "save" | "intro"; label: string };
+type Tela = { kind: "cover" | "save" | "intro" | "toc"; label: string };
 
 export type PaginaLivro = Tela & { idx: number };
+
+/** Um jogo no sumário. */
+export type Fase = {
+  /** Mundo (posição da turma na edição) e posição do jogo nele, como "3-1". */
+  fase: string;
+  slug: string;
+  nome: string;
+  turma: string;
+  tema: Tema;
+};
 
 export type SlotSave = {
   ano: number;
@@ -23,14 +35,6 @@ export type ContextoLivro = {
 };
 
 const MINIMO_DE_SLOTS = 3;
-
-export function doisDigitos(numero: number) {
-  return String(numero).padStart(2, "0");
-}
-
-function contar(quantidade: number, singular: string, plural: string) {
-  return `${quantidade} ${quantidade === 1 ? singular : plural}`;
-}
 
 /** Um slot por pasta de edição, seguidos de pelo menos um slot vazio para os próximos anos. */
 export function montarSaves(edicoes: EdicaoCompleta[], anoAtual: number): SlotSave[] {
@@ -56,11 +60,26 @@ export function montarSaves(edicoes: EdicaoCompleta[], anoAtual: number): SlotSa
   });
 }
 
+export function montarFases(edicao: EdicaoCompleta): Fase[] {
+  return edicao.turmas.flatMap((turma, mundo) =>
+    edicao.jogos
+      .filter((jogo) => jogo.turma === turma.id)
+      .map((jogo, posicao) => ({
+        fase: `${mundo + 1}-${posicao + 1}`,
+        slug: jogo.slug,
+        nome: jogo.nome,
+        turma: jogo.turma,
+        tema: jogo.tema,
+      })),
+  );
+}
+
 export function montarPaginas(_edicao: EdicaoCompleta): PaginaLivro[] {
   const telas: Tela[] = [
     { kind: "cover", label: "Capa" },
     { kind: "save", label: "Seleção de edição" },
     { kind: "intro", label: "Abertura" },
+    { kind: "toc", label: "Sumário: seleção de fases" },
   ];
   return telas.map((tela, idx) => ({ ...tela, idx }));
 }
