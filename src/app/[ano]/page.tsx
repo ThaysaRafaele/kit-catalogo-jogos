@@ -35,6 +35,7 @@ export default async function PaginaEdicao({ params }: Props) {
             {montarPaginas(edicao, mentores).map((s) => (
               <section
                 key={s.idx}
+                id={"ancora" in s ? s.ancora : undefined}
                 aria-label={s.label}
                 className="relative mb-9 rounded-lg bg-madeira p-2.5 shadow-[0_10px_0_var(--color-madeira-escura)]"
               >

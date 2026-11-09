@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { PixelButton } from "@/components/PixelButton";
 import type { Tema } from "@/lib/esquema";
-import { contar } from "@/lib/formato";
+import { ancoraDoJogo, contar } from "@/lib/formato";
 import type { Fase } from "@/lib/paginas";
 import { TEMAS } from "@/lib/temas";
 
@@ -118,7 +118,7 @@ export function MapaDeFases() {
       {visiveis.map((f) => (
         <li key={f.slug}>
           <a
-            href={`#${f.slug}`}
+            href={`#${ancoraDoJogo(f.slug)}`}
             className="cartao-fase flex items-center gap-3.5 p-3.5"
           >
             <span

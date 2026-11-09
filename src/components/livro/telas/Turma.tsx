@@ -1,3 +1,4 @@
+import { ancoraDoJogo } from "@/lib/formato";
 import type { TelaTurma } from "@/lib/paginas";
 import { TEMAS } from "@/lib/temas";
 
@@ -30,7 +31,7 @@ export function TurmaDireita({ s }: { s: TelaTurma }) {
         {s.fases.map((f) => (
           <li key={f.slug}>
             <a
-              href={`#${f.slug}`}
+              href={`#${ancoraDoJogo(f.slug)}`}
               className="cartao-fase flex flex-col gap-2.5 p-4"
             >
               <span className="font-pixelify text-base font-medium text-vinho uppercase">Fase {f.fase}</span>
@@ -44,7 +45,7 @@ export function TurmaDireita({ s }: { s: TelaTurma }) {
       </ol>
       {s.turma.mentor && (
         <div className="rounded-[10px] border-[3px] border-tinta bg-papel-claro px-4 py-3.5">
-          <p className="font-pixelify text-[15px] font-medium text-vinho uppercase">Mentor da turma</p>
+          <p className="rotulo">Mentor da turma</p>
           <p className="mt-1 text-[17px]">{s.turma.mentor}</p>
         </div>
       )}

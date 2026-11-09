@@ -60,6 +60,7 @@
   .page {
     padding: 44px 40px 72px;
     min-height: 780px;
+    container-type: inline-size;
   }
 
   .tela-centro {
@@ -69,6 +70,14 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+  }
+
+  .rotulo {
+    @apply font-pixelify text-[15px] font-medium text-vinho uppercase;
+  }
+
+  .ficha {
+    @apply overflow-hidden rounded-xl border-4 border-tinta bg-carta shadow-bloco;
   }
 
   .cartao-fase {
@@ -108,9 +117,15 @@
     }
   }
 
-  @media (max-width: 560px) {
-    .vs-grid,
+  /* Dependem da largura da página, que na dupla é metade da janela. */
+  @container (max-width: 360px) {
     .duo {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @container (max-width: 440px) {
+    .vs-grid {
       grid-template-columns: minmax(0, 1fr);
     }
   }
