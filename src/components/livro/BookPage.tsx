@@ -5,6 +5,7 @@ import type { ContextoLivro, PaginaLivro } from "@/lib/paginas";
 import { AberturaDireita, AberturaEsquerda } from "./telas/Abertura";
 import { CapaDireita, CapaEsquerda } from "./telas/Capa";
 import { JogoADireita, JogoAEsquerda } from "./telas/JogoA";
+import { JogoBDireita, JogoBEsquerda } from "./telas/JogoB";
 import { ListaMentores, MentoresAbertura } from "./telas/Mentores";
 import { SaveDireita, SaveEsquerda } from "./telas/Save";
 import { SumarioDireita, SumarioEsquerda } from "./telas/Sumario";
@@ -49,6 +50,8 @@ function Conteudo({ s, side, ctx }: Props): ReactElement {
       return side === "L" ? <TurmaEsquerda s={s} /> : <TurmaDireita s={s} />;
     case "gameA":
       return side === "L" ? <JogoAEsquerda s={s} /> : <JogoADireita s={s} />;
+    case "gameB":
+      return side === "L" ? <JogoBEsquerda s={s} /> : <JogoBDireita s={s} />;
   }
 }
 

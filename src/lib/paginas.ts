@@ -20,14 +20,14 @@ export type TelaTurma = {
   fases: Fase[];
 };
 
-export type TelaJogo = {
-  kind: "gameA";
-  label: string;
-  jogo: Jogo;
-  fase: string;
-  /** Destino dos links das fases no sumário e na abertura da turma. */
-  ancora: string;
-};
+export type TelaJogo = { label: string; jogo: Jogo; fase: string } & (
+  | {
+      kind: "gameA";
+      /** Destino dos links das fases no sumário e na abertura da turma. */
+      ancora: string;
+    }
+  | { kind: "gameB" }
+);
 
 export type PaginaLivro = Tela & { idx: number };
 
@@ -139,15 +139,16 @@ function telasDeTurmas(edicao: EdicaoCompleta): Tela[] {
         mundo,
         fases: itens.map(paraFase),
       },
-      ...itens.map(
-        ({ jogo, fase }): Tela => ({
+      ...itens.flatMap(({ jogo, fase }): Tela[] => [
+        {
           kind: "gameA",
           label: `${jogo.nome}: apresentação e personagens`,
           jogo,
           fase,
           ancora: ancoraDoJogo(jogo.slug),
-        }),
-      ),
+        },
+        { kind: "gameB", label: `${jogo.nome}: mundo, controles e equipe`, jogo, fase },
+      ]),
     ]);
 }
 

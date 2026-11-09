@@ -1,4 +1,4 @@
-import { DrawingFrame } from "./DrawingFrame";
+import { MolduraCarta } from "./DrawingFrame";
 
 const TIPOS = {
   protagonista: { cor: "#2f6b2a", marca: "P1", papel: "Protagonista" },
@@ -28,14 +28,16 @@ export function CharacterSheet({ tipo, nome, desenho, campos }: Props) {
         {papel}
       </p>
       <div className="flex flex-col gap-3 p-3.5">
-        <DrawingFrame src={desenho.src} alt={desenho.alt} altura={220} accent={cor} />
-        <h4 className="font-pixelify text-2xl leading-[1.2] font-medium wrap-anywhere text-tinta">{nome}</h4>
+        <MolduraCarta src={desenho.src} alt={desenho.alt} altura={220} accent={cor} />
+        {nome && (
+          <h4 className="font-pixelify text-2xl leading-[1.2] font-medium wrap-anywhere text-tinta">{nome}</h4>
+        )}
         {preenchidos.length > 0 && (
           <dl className="flex flex-col gap-2.5">
             {preenchidos.map((campo) => (
               <div key={campo.rotulo} className="border-t-[3px] border-dotted border-[#b89a6a] pt-2">
                 <dt className="rotulo">{campo.rotulo}</dt>
-                <dd className="mt-1 text-base leading-[1.55]">{campo.texto}</dd>
+                <dd className="mt-1 text-base leading-[1.55] wrap-anywhere">{campo.texto}</dd>
               </div>
             ))}
           </dl>
