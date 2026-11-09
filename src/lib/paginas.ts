@@ -1,17 +1,33 @@
 import type { EdicaoCompleta } from "./conteudo.ts";
-import type { Edicao, Mentor, Tema } from "./esquema.ts";
-import { contar } from "./formato.ts";
+import type { Edicao, Jogo, Mentor, Tema } from "./esquema.ts";
+import { ancoraDoJogo, contar } from "./formato.ts";
 
 /** Os tipos de página dupla do livro. Cada tela nova acrescenta um aqui. */
 type Tela =
   | { kind: "cover" | "save" | "intro" | "toc"; label: string }
   | { kind: "mentors" | "mentorsCont"; label: string; esquerda: Mentor[]; direita: Mentor[] }
-  | TelaTurma;
+  | TelaTurma
+  | TelaJogo;
 
 /** Uma turma e seus jogos. O número do mundo é a posição da turma na edição. */
-type Mundo = { turma: Edicao["turmas"][number]; mundo: number; fases: Fase[] };
+type Mundo = { turma: Edicao["turmas"][number]; mundo: number; itens: { jogo: Jogo; fase: string }[] };
 
-export type TelaTurma = { kind: "turma"; label: string } & Mundo;
+export type TelaTurma = {
+  kind: "turma";
+  label: string;
+  turma: Mundo["turma"];
+  mundo: number;
+  fases: Fase[];
+};
+
+export type TelaJogo = {
+  kind: "gameA";
+  label: string;
+  jogo: Jogo;
+  fase: string;
+  /** Destino dos links das fases no sumário e na abertura da turma. */
+  ancora: string;
+};
 
 export type PaginaLivro = Tela & { idx: number };
 
@@ -73,21 +89,20 @@ function montarMundos(edicao: EdicaoCompleta): Mundo[] {
   return edicao.turmas.map((turma, i) => ({
     turma,
     mundo: i + 1,
-    fases: edicao.jogos
+    itens: edicao.jogos
       .filter((jogo) => jogo.turma === turma.id)
-      .map((jogo, posicao) => ({
-        fase: `${i + 1}-${posicao + 1}`,
-        slug: jogo.slug,
-        nome: jogo.nome,
-        estudio: jogo.estudio,
-        turma: jogo.turma,
-        tema: jogo.tema,
-      })),
+      .map((jogo, posicao) => ({ jogo, fase: `${i + 1}-${posicao + 1}` })),
   }));
 }
 
+/** Só os campos que o sumário e a abertura da turma usam. */
+function paraFase({ jogo, fase }: Mundo["itens"][number]): Fase {
+  const { slug, nome, estudio, turma, tema } = jogo;
+  return { fase, slug, nome, estudio, turma, tema };
+}
+
 export function montarFases(edicao: EdicaoCompleta): Fase[] {
-  return montarMundos(edicao).flatMap((mundo) => mundo.fases);
+  return montarMundos(edicao).flatMap((mundo) => mundo.itens.map(paraFase));
 }
 
 const MENTORES_POR_PAGINA = 2;
@@ -112,11 +127,28 @@ function telasDeMentores(mentores: Mentor[]): Tela[] {
   return telas;
 }
 
-/** Uma abertura por turma com jogos. */
+/** Uma abertura por turma com jogos, seguida das páginas de cada jogo. */
 function telasDeTurmas(edicao: EdicaoCompleta): Tela[] {
   return montarMundos(edicao)
-    .filter((mundo) => mundo.fases.length > 0)
-    .map((mundo) => ({ kind: "turma", label: `Abertura da turma ${mundo.turma.id}`, ...mundo }));
+    .filter(({ itens }) => itens.length > 0)
+    .flatMap(({ turma, mundo, itens }): Tela[] => [
+      {
+        kind: "turma",
+        label: `Abertura da turma ${turma.id}`,
+        turma,
+        mundo,
+        fases: itens.map(paraFase),
+      },
+      ...itens.map(
+        ({ jogo, fase }): Tela => ({
+          kind: "gameA",
+          label: `${jogo.nome}: apresentação e personagens`,
+          jogo,
+          fase,
+          ancora: ancoraDoJogo(jogo.slug),
+        }),
+      ),
+    ]);
 }
 
 export function montarPaginas(edicao: EdicaoCompleta, mentores: Mentor[]): PaginaLivro[] {

@@ -1,12 +1,10 @@
 import type { Mentor } from "@/lib/esquema";
 
-const ROTULO = "font-pixelify text-[15px] font-medium text-vinho uppercase";
-
 function ListaMarcada({ titulo, itens }: { titulo: string; itens: string[] }) {
   if (itens.length === 0) return null;
   return (
     <div>
-      <p className={`mb-1.5 ${ROTULO}`}>{titulo}</p>
+      <p className="rotulo mb-1.5">{titulo}</p>
       <ul className="flex flex-col gap-1.5">
         {itens.map((item) => (
           <li key={item} className="flex items-center gap-2.5 text-base">
@@ -23,7 +21,7 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
   const { nome, foto, lider, classe, skills, specialAbility, sideQuests, funFact, disciplinas } = mentor;
 
   return (
-    <article className="w-full overflow-hidden rounded-xl border-4 border-tinta bg-carta shadow-bloco">
+    <article className="ficha w-full">
       {lider && (
         <p className="border-b-4 border-tinta bg-[#f2c230] px-3.5 py-2.5 text-center font-press text-[13px] tracking-[1px] text-tinta uppercase">
           <span aria-hidden="true">★ </span>
@@ -72,7 +70,7 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
 
         {skills.length > 0 && (
           <div>
-            <p className={`mb-2 ${ROTULO}`}>Skills</p>
+            <p className="rotulo mb-2">Skills</p>
             <ul className="flex flex-wrap gap-2">
               {skills.map((skill) => (
                 <li
@@ -110,7 +108,7 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
 
         {funFact && (
           <div className="rounded-[10px] border-[3px] border-dashed border-terra bg-creme px-3.5 py-2.5">
-            <p className={ROTULO}>
+            <p className="rotulo">
               <span aria-hidden="true">? </span>
               Fun fact
             </p>

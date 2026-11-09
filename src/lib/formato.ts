@@ -4,6 +4,11 @@ export function doisDigitos(numero: number) {
   return String(numero).padStart(2, "0");
 }
 
+/** Id da página de um jogo, com prefixo para não colidir com outros ids do documento. */
+export function ancoraDoJogo(slug: string) {
+  return `jogo-${slug}`;
+}
+
 export function contar(quantidade: number, singular: string, plural: string) {
   return `${quantidade} ${quantidade === 1 ? singular : plural}`;
 }
