@@ -91,7 +91,8 @@ function carregarJogo(arquivo: string, edicao: Edicao, avisos: string[]): Jogo {
   if (!edicao.turmas.some((t) => t.id === jogo.turma)) {
     throw new Error(`${arquivo}: turma "${jogo.turma}" não existe em edicao.json.`);
   }
-  return jogo;
+  // Sem autorização de imagem, os nomes da equipe não chegam a nenhuma tela.
+  return jogo.autorizacaoImagem ? jogo : { ...jogo, equipe: [] };
 }
 
 function carregarEdicoes(avisos: string[]): EdicaoCompleta[] {
