@@ -97,7 +97,8 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: 12px;
-    align-items: center;
+    /* As duas fichas ficam com a altura da maior; o VS fica centralizado. */
+    align-items: stretch;
   }
 
   .duo {

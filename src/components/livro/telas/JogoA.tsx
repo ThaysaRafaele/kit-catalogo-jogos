@@ -59,7 +59,7 @@ export function JogoADireita({ s }: { s: TelaJogo }) {
         />
         <p
           aria-hidden="true"
-          className="flex size-14 items-center justify-center justify-self-center rounded-full border-4 border-tinta bg-coracao font-press text-sm text-white shadow-[0_4px_0_var(--color-tinta)]"
+          className="flex size-14 items-center justify-center self-center justify-self-center rounded-full border-4 border-tinta bg-coracao font-press text-sm text-white shadow-[0_4px_0_var(--color-tinta)]"
         >
           VS
         </p>
