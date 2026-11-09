@@ -9,6 +9,11 @@ export function ancoraDoJogo(slug: string) {
   return `jogo-${slug}`;
 }
 
+/** Junta as partes preenchidas com o separador do livro. */
+export function juntar(...partes: string[]) {
+  return partes.filter(Boolean).join(" • ");
+}
+
 export function contar(quantidade: number, singular: string, plural: string) {
   return `${quantidade} ${quantidade === 1 ? singular : plural}`;
 }

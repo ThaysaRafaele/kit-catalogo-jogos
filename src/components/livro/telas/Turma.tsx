@@ -1,4 +1,4 @@
-import { ancoraDoJogo } from "@/lib/formato";
+import { ancoraDoJogo, juntar } from "@/lib/formato";
 import type { TelaTurma } from "@/lib/paginas";
 import { TEMAS } from "@/lib/temas";
 
@@ -37,7 +37,7 @@ export function TurmaDireita({ s }: { s: TelaTurma }) {
               <span className="font-pixelify text-base font-medium text-vinho uppercase">Fase {f.fase}</span>
               <span className="text-[19px] font-extrabold">{f.nome}</span>
               <span className="text-base">
-                {[f.estudio, TEMAS[f.tema].nome].filter(Boolean).join(" • ")}
+                {juntar(f.estudio, TEMAS[f.tema].nome)}
               </span>
             </a>
           </li>

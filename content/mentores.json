@@ -22,7 +22,13 @@
     "foto": "/mentores/katiuske-correa-ferreira.webp",
     "cargo": "professor",
     "classe": "PREENCHER",
-    "skills": [],
+    "skills": [
+      "Graduada em Gestão de Pessoas",
+      "Licenciada em Letras Português e Inglês",
+      "Especialista em Psicologia Cognitiva Comportamental",
+      "Especialista em Coordenação Pedagógica e Planejamento",
+      "Especialista em Departamento Pessoal e Legislação Trabalhista"
+    ],
     "specialAbility": "PREENCHER",
     "sideQuests": [],
     "funFact": "PREENCHER",

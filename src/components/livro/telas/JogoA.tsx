@@ -1,15 +1,10 @@
 import { CharacterSheet } from "@/components/CharacterSheet";
 import { ThemeBadge } from "@/components/ThemeBadge";
 import type { TelaJogo } from "@/lib/paginas";
+import { CamposInfo } from "./CampoInfo";
 
 export function JogoAEsquerda({ s }: { s: TelaJogo }) {
   const { jogo, fase } = s;
-  const dados = [
-    { rotulo: "Gênero", texto: jogo.genero },
-    { rotulo: "Plataforma", texto: jogo.plataforma },
-    { rotulo: "Turma", texto: jogo.turma },
-    { rotulo: "Estúdio", texto: jogo.estudio },
-  ].filter((dado) => dado.texto);
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -23,14 +18,14 @@ export function JogoAEsquerda({ s }: { s: TelaJogo }) {
       <div>
         <ThemeBadge tema={jogo.tema} />
       </div>
-      <dl className="duo">
-        {dados.map((dado) => (
-          <div key={dado.rotulo} className="rounded-[10px] border-[3px] border-tinta bg-papel-claro px-3 py-2.5">
-            <dt className="rotulo">{dado.rotulo}</dt>
-            <dd className="mt-1 text-base">{dado.texto}</dd>
-          </div>
-        ))}
-      </dl>
+      <CamposInfo
+        campos={[
+          { rotulo: "Gênero", texto: jogo.genero },
+          { rotulo: "Plataforma", texto: jogo.plataforma },
+          { rotulo: "Turma", texto: jogo.turma },
+          { rotulo: "Estúdio", texto: jogo.estudio },
+        ]}
+      />
       {jogo.sinopse && (
         <div className="rounded-xl bg-madeira px-5 py-[18px] text-papel">
           <h3 className="mb-2 font-press text-sm text-laranja-claro uppercase">Sinopse</h3>
