@@ -1,5 +1,7 @@
 "use client";
 
+import type { Destino } from "@/lib/paginas";
+
 type Variante = "primary" | "secondary" | "small" | "chip" | "toggle";
 
 type Props = {
@@ -9,6 +11,8 @@ type Props = {
   disabled?: boolean;
   onPress?: () => void;
   ariaLabel?: string;
+  /** Tela do livro que o botão abre; quem folheia é o livro. */
+  destino?: Destino;
 };
 
 const LARANJA = { background: "var(--color-laranja)", color: "var(--color-tinta)", sombra: "#c86a0a" };
@@ -21,6 +25,7 @@ export function PixelButton({
   disabled = false,
   onPress,
   ariaLabel,
+  destino,
 }: Props) {
   const alternavel = variant === "chip" || variant === "toggle";
   const grande = variant === "primary" || variant === "secondary";
@@ -35,6 +40,7 @@ export function PixelButton({
       disabled={disabled}
       aria-pressed={alternavel ? pressed : undefined}
       aria-label={ariaLabel}
+      data-ir={destino}
       className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2.5 border-4 border-tinta font-press leading-[1.4] whitespace-nowrap uppercase"
       style={{
         color: cores.color,

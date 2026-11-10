@@ -50,16 +50,17 @@ export type SlotSave = {
   estado: "atual" | "outra" | "vazio";
 };
 
-/** Dados e ações compartilhados pelas telas. As ações chegam com o folhear. */
+/** Dados compartilhados pelas telas. */
 export type ContextoLivro = {
   edicao: EdicaoCompleta;
   saves: SlotSave[];
-  goSave?: () => void;
-  goToc?: () => void;
-  goIntro?: () => void;
-  /** Volta para a capa, no botão "Jogar de novo". */
-  goStart?: () => void;
 };
+
+/**
+ * Telas que os botões das páginas abrem. O botão marca o destino em `data-ir` e o
+ * livro, no cliente, faz o folhear; assim as telas continuam no servidor.
+ */
+export type Destino = Extract<Tela["kind"], "cover" | "save" | "intro" | "toc">;
 
 const MINIMO_DE_SLOTS = 3;
 
