@@ -146,15 +146,6 @@
     animation: none;
   }
 
-  .corner {
-    opacity: 0.85;
-    transition: opacity 0.2s;
-  }
-
-  .corner:hover {
-    opacity: 1;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .blink {
       animation: none;

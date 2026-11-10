@@ -30,9 +30,9 @@ export function CapaDireita({ ctx }: { ctx: ContextoLivro }) {
     <div className="tela-centro gap-[26px]">
       <p className="blink font-press text-[22px] text-vinho uppercase">Press start</p>
       <nav aria-label="Menu inicial" className="flex flex-col items-center gap-5">
-        <PixelButton label="Let's play" onPress={ctx.goSave} />
-        <PixelButton label="Menu" onPress={ctx.goToc} />
-        <PixelButton label="Continue" variant="secondary" onPress={ctx.goIntro} />
+        <PixelButton label="Let's play" destino="save" />
+        <PixelButton label="Menu" destino="toc" />
+        <PixelButton label="Continue" variant="secondary" destino="intro" />
       </nav>
       <p className="mt-[18px] text-base leading-[1.6]">
         Use os botões Voltar e Continue, ou arraste o canto da página para folhear.

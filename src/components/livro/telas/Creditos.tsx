@@ -1,18 +1,8 @@
+import { Coracao } from "@/components/Coracao";
 import { LogoCurso, LogoEscola } from "@/components/Logos";
 import { PixelButton } from "@/components/PixelButton";
 import { TeamCredits } from "@/components/TeamCredits";
 import type { ContextoLivro } from "@/lib/paginas";
-
-function Coracao() {
-  return (
-    <svg width="42" height="36" viewBox="0 0 7 6" shapeRendering="crispEdges" aria-hidden="true">
-      <path
-        className="fill-coracao"
-        d="M1 0h2v1h1v-1h2v1h1v2h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-2h1z"
-      />
-    </svg>
-  );
-}
 
 export function CreditosEsquerda({ ctx }: { ctx: ContextoLivro }) {
   return (
@@ -23,9 +13,9 @@ export function CreditosEsquerda({ ctx }: { ctx: ContextoLivro }) {
         playing
       </h2>
       <div className="flex gap-2">
-        <Coracao />
-        <Coracao />
-        <Coracao />
+        <Coracao largura={42} />
+        <Coracao largura={42} />
+        <Coracao largura={42} />
       </div>
       <p className="max-w-[420px] text-lg leading-[1.65]">
         Obrigado a cada estudante que desenhou, programou, testou e apresentou. {ctx.edicao.agradecimento}
@@ -57,7 +47,7 @@ export function CreditosDireita({ ctx }: { ctx: ContextoLivro }) {
       <div className="w-full max-w-[420px]">
         <TeamCredits titulo="Créditos da Mostra" subtitulo={`LEVEL UP ${edicao.ano}`} linhas={linhas} />
       </div>
-      <PixelButton label="Jogar de novo" onPress={ctx.goStart} />
+      <PixelButton label="Jogar de novo" destino="cover" />
       <p className="text-base">Próximo save: LEVEL UP {edicao.ano + 1}</p>
     </div>
   );

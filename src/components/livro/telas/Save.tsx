@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { doisDigitos } from "@/lib/formato";
-import type { ContextoLivro, SlotSave } from "@/lib/paginas";
+import type { ContextoLivro, Destino, SlotSave } from "@/lib/paginas";
 import { Cabecalho } from "./Cabecalho";
 
 export function SaveEsquerda() {
@@ -60,13 +60,11 @@ function ConteudoSlot({ save, numero }: { save: SlotSave; numero: number }) {
 const BASE_SLOT = "flex items-center gap-4 rounded-[14px] border-4 p-[18px]";
 const CARTAO = `${BASE_SLOT} border-tinta bg-papel-claro text-left text-texto shadow-bloco`;
 
-type PropsSlot = { save: SlotSave; numero: number; onAtual?: () => void };
-
-function Slot({ save, numero, onAtual }: PropsSlot): ReactElement {
+function Slot({ save, numero }: { save: SlotSave; numero: number }): ReactElement {
   switch (save.estado) {
     case "atual":
       return (
-        <button type="button" aria-current="true" onClick={onAtual} className={`${CARTAO} cursor-pointer`}>
+        <button type="button" aria-current="true" data-ir={"intro" satisfies Destino} className={`${CARTAO} cursor-pointer`}>
           <ConteudoSlot save={save} numero={numero} />
         </button>
       );
@@ -89,7 +87,7 @@ export function SaveDireita({ ctx }: { ctx: ContextoLivro }) {
   return (
     <div className="flex flex-col gap-[22px] pt-3">
       {ctx.saves.map((save, i) => (
-        <Slot key={save.ano} save={save} numero={i + 1} onAtual={ctx.goIntro} />
+        <Slot key={save.ano} save={save} numero={i + 1} />
       ))}
     </div>
   );
