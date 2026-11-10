@@ -59,6 +59,7 @@
 @layer components {
   /* No modo leitura as páginas crescem com o conteúdo, mas não ficam menores que esta. */
   .reading .folha-pagina {
+    height: 100%;
     min-height: 780px;
   }
 

@@ -27,6 +27,9 @@ function campoDeTexto(alvo: EventTarget | null) {
   return alvo instanceof HTMLElement && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName));
 }
 
+/** Chave de uma página no palco: a página que entra é outro elemento, rolagem do zero. */
+const chave = ({ idx, side }: Lado) => `${idx}${side}`;
+
 const idDaDupla = (dupla: DuplaPronta, idx: number) => dupla.ancora ?? `dupla-${idx + 1}`;
 
 type PropsBorda = {
@@ -52,9 +55,17 @@ function Borda({ dir, ativo, aoPressionar, aoArrastar, aoSoltar, aoCancelar }: P
       onPointerMove={aoArrastar}
       onPointerUp={aoSoltar}
       onPointerCancel={aoCancelar}
+      // A roda do mouse sobre a borda rola a página que está embaixo dela.
+      onWheel={(e) =>
+        document
+          .elementsFromPoint(e.clientX, e.clientY)
+          .find((el) => el.classList.contains("rolagem"))
+          ?.scrollBy({ top: e.deltaY })
+      }
       // pan-y: um gesto vertical que começa na borda rola a página em vez de virar.
+      // A da direita deixa livre a barra de rolagem da página (12px na borda).
       className={`group absolute top-2.5 bottom-2.5 z-6 w-6 cursor-pointer touch-pan-y select-none from-[rgba(30,14,6,0.10)] to-transparent min-[821px]:w-10 ${
-        voltar ? "left-2.5 hover:bg-linear-to-r" : "right-2.5 hover:bg-linear-to-l"
+        voltar ? "left-2.5 hover:bg-linear-to-r" : "right-[22px] hover:bg-linear-to-l"
       }`}
       style={{ pointerEvents: ativo ? "auto" : "none" }}
     >
@@ -64,7 +75,7 @@ function Borda({ dir, ativo, aoPressionar, aoArrastar, aoSoltar, aoCancelar }: P
         viewBox="0 0 19 19"
         shapeRendering="crispEdges"
         className={`absolute bottom-0 block opacity-85 transition-opacity group-hover:opacity-100 ${
-          voltar ? "left-0 -scale-x-100" : "right-0"
+          voltar ? "left-0 -scale-x-100" : "-right-3"
         }`}
       >
         <path
@@ -332,7 +343,11 @@ export function Livro({ ano, duplas }: Props) {
               >
                 {estreito ? (
                   <>
-                    <div className="h-full min-w-0 rounded bg-papel" style={{ pointerEvents: animando ? "none" : "auto" }}>
+                    <div
+                      key={chave(cena.estaticas[0])}
+                      className="h-full min-w-0 rounded bg-papel"
+                      style={{ pointerEvents: animando ? "none" : "auto" }}
+                    >
                       {pagina(cena.estaticas[0])}
                     </div>
                     <div
@@ -343,8 +358,12 @@ export function Livro({ ano, duplas }: Props) {
                 ) : (
                   <>
                     <div className="spread" style={{ pointerEvents: animando ? "none" : "auto" }}>
-                      <div className="min-w-0 rounded-l bg-papel">{pagina(cena.estaticas[0])}</div>
-                      <div className="min-w-0 rounded-r bg-papel">{pagina(cena.estaticas[1])}</div>
+                      <div key={chave(cena.estaticas[0])} className="min-w-0 rounded-l bg-papel">
+                        {pagina(cena.estaticas[0])}
+                      </div>
+                      <div key={chave(cena.estaticas[1])} className="min-w-0 rounded-r bg-papel">
+                        {pagina(cena.estaticas[1])}
+                      </div>
                     </div>
                     <div aria-hidden="true" className={LOMBADA} />
                   </>

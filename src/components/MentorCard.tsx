@@ -1,3 +1,4 @@
+import { Estrela } from "@/components/Estrela";
 import type { Mentor } from "@/lib/esquema";
 
 function ListaMarcada({ titulo, itens }: { titulo: string; itens: string[] }) {
@@ -86,16 +87,7 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
 
         {specialAbility && (
           <div className="flex items-start gap-2.5 rounded-[10px] bg-floresta px-3.5 py-3 text-white">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 7 7"
-              shapeRendering="crispEdges"
-              aria-hidden="true"
-              className="mt-0.5 flex-none"
-            >
-              <path className="fill-ouro" d="M3 0h1v2h3v1h-1v1h1v3h-1v-1h-1v-1h-1v1h-1v1h-1v-3h1v-1h-1v-1h3z" />
-            </svg>
+            <Estrela tamanho={24} className="mt-0.5 flex-none" />
             <div>
               <p className="font-pixelify text-[15px] font-medium text-ouro uppercase">Special ability</p>
               <p className="mt-1 text-base leading-[1.5]">{specialAbility}</p>

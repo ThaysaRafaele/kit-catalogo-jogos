@@ -35,7 +35,7 @@ export function AberturaDireita({ ctx }: { ctx: ContextoLivro }) {
       <p className="text-lg leading-[1.65]">
         Na Mostra Cultural LEVEL UP {ctx.edicao.ano}, cada estúdio apresenta seu jogo ao público.
         Personagens e cenários deste catálogo foram desenhados à mão e depois escaneados, ou feitos no
-        computador, por pixel art.
+        computador, em pixel art.
       </p>
       <h3 className="mt-1 font-pixelify text-xl font-medium">Temas desta edição</h3>
       <div className="flex flex-col items-start gap-3">
