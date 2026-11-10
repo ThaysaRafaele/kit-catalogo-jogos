@@ -29,13 +29,11 @@
       "Especialista em Coordenação Pedagógica e Planejamento",
       "Especialista em Departamento Pessoal e Legislação Trabalhista"
     ],
-    "specialAbility": "PREENCHER",
-    "sideQuests": [],
-    "funFact": "PREENCHER",
-    "disciplinas": [
-      "Iniciação Científica (1º H)",
-      "Empresas Pedagógicas (3º F)"
+    "specialAbility": "Transformar ideias em possibilidades!",
+    "sideQuests": [
+      "Consultora em Gestão de Pessoas"
     ],
+    "funFact": "Super Mãe",
     "lider": false
   },
   {
