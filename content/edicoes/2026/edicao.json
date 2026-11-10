@@ -2,6 +2,7 @@
   "ano": 2026,
   "titulo": "Mostra Cultural • LEVEL UP 2026",
   "textoAbertura": "PREENCHER",
+  "agradecimento": "PREENCHER",
   "turmas": [{ "id": "1º H" }, { "id": "1º I" }, { "id": "2º G" }, { "id": "3º F" }],
   "creditos": [
     { "funcao": "Coordenação", "nome": "Jean Bites" },

@@ -11,7 +11,7 @@ export function JogoBEsquerda({ s }: { s: TelaJogo }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="font-pixelify text-[17px] font-medium text-vinho uppercase">
+      <p className="font-pixelify text-[17px] font-medium wrap-anywhere text-vinho uppercase">
         Fase {fase} • {jogo.nome}
       </p>
       <h2 className="font-press text-[22px] leading-[1.4] text-vinho uppercase">O mundo</h2>
@@ -26,7 +26,7 @@ export function JogoBEsquerda({ s }: { s: TelaJogo }) {
           <h3 className="mt-1 font-pixelify text-xl font-medium">Características visuais</h3>
           <ol className="flex flex-col gap-2">
             {mundo.caracteristicas.map((caracteristica, i) => (
-              <li key={caracteristica} className="flex items-center gap-3 text-[17px]">
+              <li key={i} className="flex items-center gap-3 text-[17px]">
                 <span
                   aria-hidden="true"
                   className="flex size-8 flex-none items-center justify-center rounded-md border-[3px] border-tinta bg-laranja font-press text-xs text-tinta"

@@ -14,13 +14,13 @@ export function TeamCredits({ titulo, subtitulo, linhas }: Props) {
       )}
       {linhas.length > 0 && (
         <dl className="mt-3.5 flex flex-col gap-2.5">
-          {linhas.map((linha) => (
-            <div key={`${linha.funcao}-${linha.nome}`} className="flex items-baseline gap-2">
+          {linhas.map((linha, i) => (
+            <div key={i} className="flex items-baseline gap-2">
               {/* O pontilhado é decoração em CSS: um elemento a mais dentro do <dl> seria inválido. */}
               <dt className="flex min-w-0 flex-1 items-baseline gap-2 text-left font-pixelify text-base font-medium text-[#ffcf5a] uppercase after:min-w-4 after:flex-1 after:-translate-y-1 after:border-b-[3px] after:border-dotted after:border-[#7d6aa8] after:content-['']">
                 {linha.funcao}
               </dt>
-              <dd className="max-w-[60%] text-right text-[17px] font-bold text-white">{linha.nome}</dd>
+              <dd className="max-w-[60%] text-right text-[17px] font-bold wrap-anywhere text-white">{linha.nome}</dd>
             </div>
           ))}
         </dl>

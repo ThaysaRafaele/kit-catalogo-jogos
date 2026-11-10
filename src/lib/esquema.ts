@@ -3,6 +3,14 @@ import { z } from "zod";
 /** Marcador usado nos JSON para campo ainda sem conteúdo. */
 export const MARCADOR_VAZIO = "PREENCHER";
 
+/**
+ * Lista de linhas que só fazem sentido completas (função e nome, ação e teclas).
+ * Linha com algum texto vazio sai aqui, então as telas contam só o que aparece.
+ */
+function linhas<T extends z.ZodRawShape>(forma: T) {
+  return z.array(z.object(forma)).transform((itens) => itens.filter((item) => !Object.values(item).includes("")));
+}
+
 const desenho = z.object({
   src: z.string(),
   alt: z.string().min(1, "todo desenho precisa de alt"),
@@ -22,7 +30,7 @@ export const edicaoSchema = z.object({
       }),
     )
     .refine((turmas) => new Set(turmas.map((t) => t.id)).size === turmas.length, "turma repetida"),
-  creditos: z.array(z.object({ funcao: z.string(), nome: z.string() })),
+  creditos: linhas({ funcao: z.string(), nome: z.string() }),
 });
 
 export const jogoSchema = z.object({
@@ -55,10 +63,10 @@ export const jogoSchema = z.object({
     inspiracao: z.string(),
     desenho,
   }),
-  controles: z.array(z.object({ acao: z.string(), teclas: z.array(z.string()) })),
+  controles: linhas({ acao: z.string(), teclas: z.array(z.string()) }),
   desafio: z.string(),
   solucao: z.string(),
-  equipe: z.array(z.object({ nome: z.string(), funcao: z.string() })),
+  equipe: linhas({ nome: z.string(), funcao: z.string() }),
   // Texto vazio é o "PREENCHER" já limpo: o botão de jogar não aparece.
   link: z.url({ protocol: /^https?$/ }).or(z.literal("")).optional(),
   autorizacaoImagem: z.boolean(),
