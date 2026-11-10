@@ -4,7 +4,7 @@ import { ancoraDoJogo, contar } from "./formato.ts";
 
 /** Os tipos de página dupla do livro. Cada tela nova acrescenta um aqui. */
 type Tela =
-  | { kind: "cover" | "save" | "intro" | "toc"; label: string }
+  | { kind: "cover" | "save" | "intro" | "toc" | "end"; label: string }
   | { kind: "mentors" | "mentorsCont"; label: string; esquerda: Mentor[]; direita: Mentor[] }
   | TelaTurma
   | TelaJogo;
@@ -57,6 +57,8 @@ export type ContextoLivro = {
   goSave?: () => void;
   goToc?: () => void;
   goIntro?: () => void;
+  /** Volta para a capa, no botão "Jogar de novo". */
+  goStart?: () => void;
 };
 
 const MINIMO_DE_SLOTS = 3;
@@ -160,6 +162,7 @@ export function montarPaginas(edicao: EdicaoCompleta, mentores: Mentor[]): Pagin
     { kind: "toc", label: "Sumário: seleção de fases" },
     ...telasDeMentores(mentores),
     ...telasDeTurmas(edicao),
+    { kind: "end", label: "Créditos finais" },
   ];
   return telas.map((tela, idx) => ({ ...tela, idx }));
 }

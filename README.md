@@ -31,7 +31,7 @@ Depois, abra <http://localhost:3000>.
 ```text
 content/
   mentores.json                   mentores (valem para todas as edições)
-  edicoes/2026/edicao.json        título, abertura, turmas e créditos da edição
+  edicoes/2026/edicao.json        título, abertura, turmas, créditos e agradecimento da edição
   edicoes/2026/jogos/<slug>.json  um arquivo por jogo
 public/
   marca/                          logos da escola e do curso
@@ -59,6 +59,8 @@ referencia-design/                protótipo aprovado, a referência do visual
 2. Adicione os jogos em `content/edicoes/<ano>/jogos/`.
 
 A página inicial abre a edição mais recente que tenha pelo menos um jogo. Na tela de seleção, uma edição sem jogos aparece como "Slot vazio". Uma pasta de ano sem `edicao.json` é ignorada.
+
+Nos créditos finais, o campo opcional `agradecimento` vem depois de "Obrigado a cada estudante que desenhou, programou, testou e apresentou.". Use-o para agradecer às famílias, à escola e aos visitantes. A lista "Créditos da Mostra" usa os `creditos` da edição e termina com uma linha que reúne as turmas.
 
 ## Importar as fichas
 

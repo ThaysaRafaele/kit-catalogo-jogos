@@ -4,6 +4,7 @@ import { doisDigitos } from "@/lib/formato";
 import type { ContextoLivro, PaginaLivro } from "@/lib/paginas";
 import { AberturaDireita, AberturaEsquerda } from "./telas/Abertura";
 import { CapaDireita, CapaEsquerda } from "./telas/Capa";
+import { CreditosDireita, CreditosEsquerda } from "./telas/Creditos";
 import { JogoADireita, JogoAEsquerda } from "./telas/JogoA";
 import { JogoBDireita, JogoBEsquerda } from "./telas/JogoB";
 import { ListaMentores, MentoresAbertura } from "./telas/Mentores";
@@ -52,6 +53,8 @@ function Conteudo({ s, side, ctx }: Props): ReactElement {
       return side === "L" ? <JogoAEsquerda s={s} /> : <JogoADireita s={s} />;
     case "gameB":
       return side === "L" ? <JogoBEsquerda s={s} /> : <JogoBDireita s={s} />;
+    case "end":
+      return side === "L" ? <CreditosEsquerda ctx={ctx} /> : <CreditosDireita ctx={ctx} />;
   }
 }
 
