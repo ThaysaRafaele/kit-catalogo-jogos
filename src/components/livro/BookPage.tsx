@@ -19,7 +19,7 @@ function Rodape({ numero, direita }: { numero: number; direita: boolean }) {
   return (
     <div
       aria-hidden="true"
-      className={`absolute right-6 bottom-5 left-6 flex items-center gap-2 ${direita ? "flex-row-reverse" : ""}`}
+      className={`flex flex-none items-center gap-2 px-6 pt-2 pb-5 ${direita ? "flex-row-reverse" : ""}`}
     >
       <img src={LOGO_ESCOLA.rodape} alt="" className="block size-6 object-contain" />
       <img src={LOGO_CURSO.rodape} alt="" className="block size-6 object-contain" />
@@ -60,10 +60,15 @@ function Conteudo({ s, side, ctx }: Props): ReactElement {
 
 export function BookPage({ s, side, ctx }: Props) {
   const direita = side === "R";
+  const numero = s.idx * 2 + (direita ? 2 : 1);
+  // No livro a folha tem altura fixa: o conteúdo que passar dela rola dentro da página,
+  // e o rodapé fica sempre embaixo (veja .folha-pagina e .rolagem em globals.css).
   return (
-    <div className="page relative h-full bg-papel">
-      <Conteudo s={s} side={side} ctx={ctx} />
-      <Rodape numero={s.idx * 2 + (direita ? 2 : 1)} direita={direita} />
+    <div className="folha-pagina flex flex-col bg-papel">
+      <div className="page rolagem min-h-0 flex-1" data-pagina={numero}>
+        <Conteudo s={s} side={side} ctx={ctx} />
+      </div>
+      <Rodape numero={numero} direita={direita} />
     </div>
   );
 }

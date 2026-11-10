@@ -108,9 +108,10 @@ export function montarFases(edicao: EdicaoCompleta): Fase[] {
   return montarMundos(edicao).flatMap((mundo) => mundo.itens.map(paraFase));
 }
 
-const MENTORES_POR_PAGINA = 2;
+// Um por página: com dois, a página ficava quase o dobro da altura das outras.
+const MENTORES_POR_PAGINA = 1;
 
-/** Líderes na primeira página; os demais, em duplas, continuam em quantas páginas forem precisas. */
+/** Líderes na primeira página; os demais, um por página, continuam em quantas forem precisas. */
 function telasDeMentores(mentores: Mentor[]): Tela[] {
   const professores = mentores.filter((m) => !m.lider);
   const paginas = [mentores.filter((m) => m.lider)];
