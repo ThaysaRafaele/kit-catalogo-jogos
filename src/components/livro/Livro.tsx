@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type MouseEvent, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import { PixelButton } from "@/components/PixelButton";
 import { doisDigitos } from "@/lib/formato";
 import { Coracao } from "@/components/Coracao";
@@ -19,7 +19,7 @@ export type DuplaPronta = {
 type Props = { ano: number; duplas: DuplaPronta[] };
 
 const CORACOES = 5;
-const MOLDURA = "relative mb-9 rounded-lg bg-madeira p-2.5 shadow-[0_10px_0_var(--color-madeira-escura)]";
+const MOLDURA = "relative rounded-lg bg-madeira p-2.5 shadow-[0_10px_0_var(--color-madeira-escura)]";
 const LOMBADA =
   "pointer-events-none absolute top-2.5 bottom-2.5 left-1/2 z-2 -ml-12 w-24 bg-[linear-gradient(to_right,rgba(59,31,18,0)_0%,rgba(59,31,18,0.10)_30%,rgba(59,31,18,0.38)_47%,rgba(30,14,6,0.55)_50%,rgba(59,31,18,0.38)_53%,rgba(59,31,18,0.10)_70%,rgba(59,31,18,0)_100%)]";
 
@@ -80,6 +80,83 @@ function Borda({ dir, ativo, aoPressionar, aoArrastar, aoSoltar, aoCancelar }: P
   );
 }
 
+/** Uma entrada do seletor: a página (contando de 0), o texto curto e o rótulo completo. */
+type OpcaoPagina = { valor: number; curto: string; rotulo: string };
+
+type PropsIrPara = {
+  opcoes: OpcaoPagina[];
+  /** Página mostrada (na dupla, a da esquerda), contando de 0. */
+  atual: number;
+  total: number;
+  /** Recebe a página contando de 0; devolve se o livro virou. */
+  aoIr: (pagina: number) => boolean;
+};
+
+/** Espera antes de virar quando a escolha vem das setas, que trocam a opção a cada tecla. */
+const ESPERA_DO_TECLADO = 400;
+
+/**
+ * Paginador com a lista de todas as páginas. Por baixo é um <select> nativo (o leitor de
+ * tela e o celular o tratam como tal), invisível sobre o texto "PÁG 17–18 / 22".
+ */
+function IrParaPagina({ opcoes, atual, total, aoIr }: PropsIrPara) {
+  // Escolha ainda não aplicada: com as setas, só vira depois de uma pausa.
+  const [rascunho, setRascunho] = useState<number | null>(null);
+  const espera = useRef<number | undefined>(undefined);
+  const peloPonteiro = useRef(false);
+  useEffect(() => () => clearTimeout(espera.current), []);
+
+  function confirmar(valor: number | null) {
+    clearTimeout(espera.current);
+    setRascunho(null);
+    // Se o livro recusar (já está nessa página, ou virando), o seletor volta à atual.
+    if (valor !== null) aoIr(valor);
+  }
+
+  function escolher(valor: number) {
+    // Com mouse ou dedo, a escolha é definitiva; com as setas, pode ser só passagem.
+    if (peloPonteiro.current) {
+      confirmar(valor);
+      return;
+    }
+    setRascunho(valor);
+    clearTimeout(espera.current);
+    espera.current = window.setTimeout(() => confirmar(valor), ESPERA_DO_TECLADO);
+  }
+
+  const valor = rascunho ?? atual;
+  const curto = opcoes.find((opcao) => opcao.valor === valor)?.curto;
+
+  return (
+    <div className="relative flex items-center gap-2 rounded-full border-4 border-tinta bg-papel px-4 py-2.5 font-pixelify text-lg font-medium has-[:focus-visible]:outline-4 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-[#0b2d8f] has-[:focus-visible]:outline-solid">
+      <span aria-hidden="true">
+        PÁG {curto} / {total}
+      </span>
+      <span aria-hidden="true" className="text-sm text-vinho">
+        ▼
+      </span>
+      <select
+        aria-label="Ir para a página"
+        value={valor}
+        onPointerDown={() => (peloPonteiro.current = true)}
+        onKeyDown={(e) => {
+          peloPonteiro.current = false;
+          if (e.key === "Enter") confirmar(rascunho);
+        }}
+        onChange={(e) => escolher(Number(e.target.value))}
+        onBlur={() => confirmar(rascunho)}
+        className="seletor-pagina absolute inset-0 cursor-pointer opacity-0"
+      >
+        {opcoes.map((opcao) => (
+          <option key={opcao.valor} value={opcao.valor}>
+            {opcao.rotulo}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export function Livro({ ano, duplas }: Props) {
   const livro = useBookFlip(duplas.map((dupla) => dupla.ancora));
   const { p, k, total, estreito, leitura, animando, cena, refs } = livro;
@@ -103,6 +180,7 @@ export function Livro({ ano, duplas }: Props) {
 
   function folhear(virou: boolean) {
     if (virou) foco.current = "seSumir";
+    return virou;
   }
 
   // Tocar ou arrastar a borda segue a mesma regra de foco de Voltar e Continue.
@@ -178,21 +256,34 @@ export function Livro({ ano, duplas }: Props) {
     : estreito
       ? `Página ${p + 1} de ${total}: ${rotulo}`
       : `Páginas ${2 * k + 1} e ${2 * k + 2} de ${total}: ${rotulo}`;
-  const paginador = estreito
-    ? `PÁG ${doisDigitos(p + 1)} / ${total}`
-    : `PÁG ${doisDigitos(2 * k + 1)}–${doisDigitos(2 * k + 2)} / ${total}`;
   const bordasAtivas = !animando || livro.arrastando;
+  // Na dupla, uma opção por página dupla; no celular, uma por página.
+  const opcoesDePagina: OpcaoPagina[] = estreito
+    ? duplas.flatMap((dupla, i) =>
+        [2 * i, 2 * i + 1].map((q) => ({
+          valor: q,
+          curto: doisDigitos(q + 1),
+          rotulo: `Página ${q + 1}: ${dupla.label}`,
+        })),
+      )
+    : duplas.map((dupla, i) => ({
+        valor: 2 * i,
+        curto: `${doisDigitos(2 * i + 1)}–${doisDigitos(2 * i + 2)}`,
+        rotulo: `Páginas ${2 * i + 1} e ${2 * i + 2}: ${dupla.label}`,
+      }));
   const { folha } = cena;
 
+  // No livro, tudo cabe na altura da tela: cabeçalho e navegação com a altura natural,
+  // e o palco com o resto (veja .livro-fixo). No modo leitura, a página cresce à vontade.
   return (
-    <>
+    <div className={leitura ? "contents" : "flex h-svh min-h-[620px] flex-col"}>
       <a
         href="#conteudo"
         className="sr-only z-10 rounded-lg border-4 border-tinta bg-papel px-4 py-2 font-bold text-vinho focus:not-sr-only focus:absolute focus:top-3 focus:left-3"
       >
         Pular para o conteúdo
       </a>
-      <header className="relative z-2 mx-auto flex w-full max-w-[1240px] flex-wrap items-center justify-between gap-3.5 px-4 pt-[18px] pb-3">
+      <header className="relative z-2 mx-auto flex w-full flex-none max-w-[1240px] flex-wrap items-center justify-between gap-3.5 px-4 pt-[18px] pb-3">
         <div className="flex flex-wrap items-center gap-4">
           {/* No modo leitura a página não muda, então os corações não diriam o progresso real. */}
           {!leitura && (
@@ -211,15 +302,15 @@ export function Livro({ ano, duplas }: Props) {
         </nav>
       </header>
 
-      <main id="conteudo" tabIndex={-1} className="flex-1 px-4 pt-2">
+      <main id="conteudo" tabIndex={-1} className={`flex-1 px-4 pt-2 ${leitura ? "" : "flex min-h-0 flex-col"}`}>
         <p className="sr-only" aria-live="polite">
           {aviso}
         </p>
-        <div className="mx-auto max-w-[1240px]">
+        <div className={`mx-auto w-full max-w-[1240px] ${leitura ? "" : "flex min-h-0 flex-1 flex-col"}`}>
           {leitura ? (
             <div className="reading" onClick={aoClicar}>
               {duplas.map((dupla, idx) => (
-                <section key={idx} id={idDaDupla(dupla, idx)} aria-label={dupla.label} tabIndex={-1} className={MOLDURA}>
+                <section key={idx} id={idDaDupla(dupla, idx)} aria-label={dupla.label} tabIndex={-1} className={`mb-9 ${MOLDURA}`}>
                   <div className="spread">
                     <div className="min-w-0 bg-papel">{dupla.L}</div>
                     <div className="min-w-0 bg-papel">{dupla.R}</div>
@@ -236,12 +327,12 @@ export function Livro({ ano, duplas }: Props) {
                 aria-label="Livro aberto"
                 aria-busy={animando}
                 tabIndex={-1}
-                className={MOLDURA}
+                className={`livro-fixo mb-4 max-h-[840px] flex-1 ${estreito ? "min-h-[400px]" : "min-h-[500px]"} ${MOLDURA}`}
                 onClick={aoClicar}
               >
                 {estreito ? (
                   <>
-                    <div className="min-w-0 rounded bg-papel" style={{ pointerEvents: animando ? "none" : "auto" }}>
+                    <div className="h-full min-w-0 rounded bg-papel" style={{ pointerEvents: animando ? "none" : "auto" }}>
                       {pagina(cena.estaticas[0])}
                     </div>
                     <div
@@ -292,18 +383,25 @@ export function Livro({ ano, duplas }: Props) {
                 {!livro.noInicio && <Borda dir="prev" ativo={bordasAtivas} {...borda} />}
               </div>
 
-              <nav aria-label="Folhear páginas" className="mt-1 flex flex-wrap items-center justify-center gap-[18px]">
+              <nav
+                aria-label="Folhear páginas"
+                className={`flex flex-none flex-wrap items-center justify-center pb-3 ${estreito ? "gap-3" : "gap-[18px]"}`}>
                 <PixelButton
-                  label="◀ Voltar"
+                  label={estreito ? "◀" : "◀ Voltar"}
+                  variant={estreito ? "small" : "primary"}
                   ariaLabel="Voltar"
                   disabled={livro.noInicio}
                   onPress={() => folhear(livro.anterior())}
                 />
-                <p className="rounded-full border-4 border-tinta bg-papel px-[18px] py-2.5 font-pixelify text-lg font-medium">
-                  {paginador}
-                </p>
+                <IrParaPagina
+                  opcoes={opcoesDePagina}
+                  atual={estreito ? p : 2 * k}
+                  total={total}
+                  aoIr={(q) => folhear(livro.flipTo(q))}
+                />
                 <PixelButton
-                  label="Continue ▶"
+                  label={estreito ? "▶" : "Continue ▶"}
+                  variant={estreito ? "small" : "primary"}
                   ariaLabel="Continue"
                   disabled={livro.noFim}
                   onPress={() => folhear(livro.proxima())}
@@ -313,6 +411,6 @@ export function Livro({ ano, duplas }: Props) {
           )}
         </div>
       </main>
-    </>
+    </div>
   );
 }

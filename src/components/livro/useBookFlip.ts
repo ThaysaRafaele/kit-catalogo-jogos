@@ -165,6 +165,7 @@ export function useBookFlip(ancoras: (string | undefined)[]) {
   const arraste = useRef<Ponto | null>(null);
   const geo = useRef<Geometria | null>(null);
   const ultimoP = useRef<Ponto | null>(null);
+  const rolagens = useRef(new Map<string, number>());
   const quadro = useRef<number | undefined>(undefined);
   const timer = useRef<number | undefined>(undefined);
   // Os eventos leem o estado mais recente daqui, sem depender de quando foram criados.
@@ -201,6 +202,13 @@ export function useBookFlip(ancoras: (string | undefined)[]) {
     }
     ocupado.current = true;
     pendente.current = comArraste ? "drag" : "auto";
+    // A página que dobra é uma cópia: ela precisa mostrar o mesmo trecho rolado.
+    rolagens.current = new Map(
+      [...(palco.current?.querySelectorAll<HTMLElement>("[data-pagina]") ?? [])].map((el) => [
+        el.dataset.pagina!,
+        el.scrollTop,
+      ]),
+    );
     setAnim({ dir: q > p ? "next" : "prev", from: p, to: q, drag: comArraste });
     if (!comArraste) irParaPalco();
     return true;
@@ -355,6 +363,9 @@ export function useBookFlip(ancoras: (string | undefined)[]) {
       return;
     }
     const g = geo.current!;
+    for (const el of frente.current.querySelectorAll<HTMLElement>("[data-pagina]")) {
+      el.scrollTop = rolagens.current.get(el.dataset.pagina!) ?? 0;
+    }
     aplicar(g.inicio);
     if (modo === "auto") animar(g.inicio, g.fim, DURACAO, g.arco, concluir);
   });
