@@ -52,7 +52,9 @@ export function validarJogo(entrada: EntradaJogo, ctx: ContextoValidacao) {
   const adicionar = (caminho: (string | number)[], mensagem: string) => {
     const id = idDoCampo(caminho);
     if (erros.some((e) => e.id === id)) return;
-    erros.push({ id, rotulo: rotuloDoCampo(`.${caminho.filter((p) => typeof p === "string").join(".")}`), mensagem });
+    const linha = caminho.find((p) => typeof p === "number");
+    const rotulo = rotuloDoCampo(`.${caminho.filter((p) => typeof p === "string").join(".")}`);
+    erros.push({ id, rotulo: typeof linha === "number" ? `${rotulo} (linha ${linha + 1})` : rotulo, mensagem });
   };
 
   // Na ordem da ficha, para o resumo de erros seguir a ordem da tela.
@@ -63,6 +65,15 @@ export function validarJogo(entrada: EntradaJogo, ctx: ContextoValidacao) {
   else if (ctx.slugsOcupados.includes(gravar.slug)) {
     adicionar(["slug"], "Já existe um jogo com este endereço nesta edição. Mude o endereço.");
   }
+
+  // Linha pela metade sumiria do catálogo sem aviso (o build descarta a linha).
+  entrada.controles.forEach((c, i) => {
+    if (!c.acao.trim() && c.teclas.trim()) adicionar(["controles", i, "acao"], "Escreva a ação destas teclas, ou remova a linha.");
+  });
+  entrada.equipe.forEach((p, i) => {
+    if (p.nome.trim() && !p.funcao.trim()) adicionar(["equipe", i, "funcao"], "Escreva a função, ou remova a linha.");
+    if (p.funcao.trim() && !p.nome.trim()) adicionar(["equipe", i, "nome"], "Escreva o primeiro nome, ou remova a linha.");
+  });
 
   // O esquema do build, sobre a ficha limpa do mesmo jeito que o build limpa.
   const resultado = jogoSchema.safeParse(limparConteudo(gravar, { existeImagem: () => true }, []));
