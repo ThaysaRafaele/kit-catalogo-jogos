@@ -51,11 +51,26 @@ export async function responderPublicacao(pedido: Omit<PedidoPublicacao, "desenh
  * "desenho-mundo".
  */
 export async function lerCorpo(req: Request): Promise<CorpoPublicacao | null> {
-  const tipo = req.headers.get("content-type") ?? "";
-  let dados: unknown;
+  const corpo = await lerEntradaEArquivos(req, TIPOS_DESENHO.map((tipo) => `desenho-${tipo}`));
+  if (!corpo) return null;
   const arquivos: CorpoPublicacao["arquivos"] = {};
+  for (const tipo of TIPOS_DESENHO) {
+    const arquivo = corpo.arquivos[`desenho-${tipo}`];
+    if (arquivo) arquivos[tipo] = arquivo;
+  }
+  return { entrada: corpo.entrada, sha: corpo.sha, arquivos };
+}
 
-  if (tipo.startsWith("multipart/form-data")) {
+/**
+ * Leitor comum das rotas que publicam: JSON { entrada, sha }, ou multipart com o
+ * campo "dados" (o mesmo JSON) e os arquivos nos `campos` pedidos. Nada é
+ * processado aqui: quem chama confere o pedido antes de converter as imagens.
+ */
+export async function lerEntradaEArquivos(req: Request, campos: string[]) {
+  let dados: unknown;
+  const arquivos: Record<string, Buffer> = {};
+
+  if ((req.headers.get("content-type") ?? "").startsWith("multipart/form-data")) {
     const form = await req.formData().catch(() => null);
     if (!form) return null;
     try {
@@ -63,9 +78,9 @@ export async function lerCorpo(req: Request): Promise<CorpoPublicacao | null> {
     } catch {
       return null;
     }
-    for (const desenho of TIPOS_DESENHO) {
-      const arquivo = form.get(`desenho-${desenho}`);
-      if (arquivo instanceof File && arquivo.size > 0) arquivos[desenho] = Buffer.from(await arquivo.arrayBuffer());
+    for (const campo of campos) {
+      const arquivo = form.get(campo);
+      if (arquivo instanceof File && arquivo.size > 0) arquivos[campo] = Buffer.from(await arquivo.arrayBuffer());
     }
   } else {
     dados = await req.json().catch(() => null);
@@ -73,5 +88,5 @@ export async function lerCorpo(req: Request): Promise<CorpoPublicacao | null> {
 
   if (!dados || typeof dados !== "object" || !("entrada" in dados)) return null;
   const { entrada, sha } = dados as { entrada: unknown; sha?: unknown };
-  return { entrada, sha: typeof sha === "string" ? sha : null, arquivos };
+  return { entrada, sha: typeof sha === "string" && sha ? sha : null, arquivos };
 }

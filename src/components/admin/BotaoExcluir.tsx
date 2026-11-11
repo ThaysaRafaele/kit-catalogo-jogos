@@ -7,15 +7,20 @@ import { useAviso } from "./Aviso";
 import { estilos } from "./estilos";
 
 type Props = {
-  ano: string;
-  slug: string;
-  /** Sha da ficha quando o painel foi aberto: se outra pessoa salvou depois, o servidor recusa. */
-  sha: string;
+  /** O que vai ser excluído, como aparece na tela ("Heaven Runner", "Robin Bryan"). */
   nome: string;
+  /** Rota DELETE da API. */
+  url: string;
+  /** Corpo do pedido, em geral { sha } para o servidor recusar se alguém salvou depois. */
+  corpo: object;
+  /** O que sai do catálogo, para a pessoa confirmar sabendo. */
+  explicacao: string;
+  /** Outra gravação em andamento (ex.: a lista sendo reordenada): o botão espera. */
+  ocupado?: boolean;
 };
 
 /** Botão "Excluir" com confirmação num <dialog> nativo (prende o foco e fecha no Esc). */
-export function ExcluirJogo({ ano, slug, sha, nome }: Props) {
+export function BotaoExcluir({ nome, url, corpo, explicacao, ocupado = false }: Props) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const [excluindo, setExcluindo] = useState(false);
   const { avisar } = useAviso();
@@ -25,18 +30,18 @@ export function ExcluirJogo({ ano, slug, sha, nome }: Props) {
   async function excluir() {
     setExcluindo(true);
     try {
-      const resposta = await fetch(`/api/admin/edicoes/${ano}/jogos/${slug}`, {
+      const resposta = await fetch(url, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sha }),
+        body: JSON.stringify(corpo),
       });
-      const corpo = (await resposta.json().catch(() => ({}))) as { erro?: string };
+      const resultado = (await resposta.json().catch(() => ({}))) as { erro?: string };
       dialogo.current?.close();
       if (resposta.ok) {
-        avisar({ tipo: "ok", texto: `${nome} foi excluído. O catálogo atualiza em cerca de 2 minutos.` });
+        avisar({ tipo: "ok", texto: `Exclusão de ${nome} feita. O catálogo atualiza em cerca de 2 minutos.` });
         router.refresh();
       } else {
-        avisar({ tipo: "erro", texto: corpo.erro ?? "Não foi possível excluir." });
+        avisar({ tipo: "erro", texto: resultado.erro ?? "Não foi possível excluir." });
       }
     } catch {
       dialogo.current?.close();
@@ -49,24 +54,20 @@ export function ExcluirJogo({ ano, slug, sha, nome }: Props) {
     <>
       <button
         type="button"
-        onClick={() => dialogo.current?.showModal()}
-        className={`${BASE_BOTAO} ${estiloBotao("ghost")}`}
+        onClick={() => {
+          if (!ocupado) dialogo.current?.showModal();
+        }}
+        aria-disabled={ocupado || undefined}
+        className={`${BASE_BOTAO} ${estiloBotao("ghost")} aria-disabled:opacity-40`}
         aria-label={`Excluir ${nome}`}
       >
         Excluir
       </button>
-      <dialog
-        ref={dialogo}
-        aria-labelledby={titulo}
-        className={`${estilos.cartao} m-auto max-w-md backdrop:bg-tinta/60`}
-      >
+      <dialog ref={dialogo} aria-labelledby={titulo} className={`${estilos.cartao} m-auto max-w-md backdrop:bg-tinta/60`}>
         <h2 id={titulo} className={estilos.subtitulo}>
           Excluir {nome}?
         </h2>
-        <p className="mt-3">
-          A ficha e os três desenhos saem do catálogo. Dá para recuperar pelo histórico do GitHub, mas não por
-          aqui.
-        </p>
+        <p className="mt-3">{explicacao} Dá para recuperar pelo histórico do GitHub, mas não por aqui.</p>
         <div className="mt-5 flex flex-wrap gap-3">
           <button
             type="button"

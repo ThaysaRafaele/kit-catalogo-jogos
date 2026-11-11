@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProvedorAviso } from "@/components/admin/Aviso";
 import { estilos } from "@/components/admin/estilos";
-import { ExcluirJogo } from "@/components/admin/ExcluirJogo";
+import { BotaoExcluir } from "@/components/admin/BotaoExcluir";
 import { NovaEdicao } from "@/components/admin/NovaEdicao";
 import { listarAnos, painelDaEdicao, type ResumoJogo, type StatusJogo } from "@/lib/admin/dados";
 import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
@@ -70,7 +70,12 @@ function CartaoJogo({ ano, jogo }: { ano: string; jogo: ResumoJogo }) {
         >
           Ver no catálogo
         </a>
-        <ExcluirJogo ano={ano} slug={jogo.slug} sha={jogo.sha} nome={jogo.nome} />
+        <BotaoExcluir
+          nome={jogo.nome}
+          url={`/api/admin/edicoes/${ano}/jogos/${jogo.slug}`}
+          corpo={{ sha: jogo.sha }}
+          explicacao="A ficha e os três desenhos saem do catálogo."
+        />
       </div>
     </li>
   );

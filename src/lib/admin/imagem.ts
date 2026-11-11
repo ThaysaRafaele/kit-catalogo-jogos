@@ -4,7 +4,7 @@
  * (não pela extensão), o tamanho, e reconverte com o sharp. A reconversão também
  * tira os metadados, como o EXIF com a localização das fotos de celular.
  */
-import sharp from "sharp";
+import sharp, { type ResizeOptions } from "sharp";
 
 /** Abaixo do limite de 4,5 MB por requisição das funções da Vercel. */
 export const TAMANHO_MAXIMO = 4 * 1024 * 1024;
@@ -32,8 +32,23 @@ export function detectarTipo(dados: Buffer): TipoImagem | null {
   return null;
 }
 
+/** Lado da foto dos mentores: as atuais são quadradas, de 192 px. */
+export const LADO_FOTO = 192;
+
 /** Confere e converte para WebP (no máximo `ladoMaximo` px no maior lado, qualidade 85). */
-export async function processarImagem(dados: Buffer, ladoMaximo = LADO_MAXIMO): Promise<Buffer> {
+export function processarImagem(dados: Buffer, ladoMaximo = LADO_MAXIMO): Promise<Buffer> {
+  return converter(dados, { width: ladoMaximo, height: ladoMaximo, fit: "inside", withoutEnlargement: true });
+}
+
+/**
+ * Foto de mentor: quadrado de 192 px. O recorte vai para a região com mais
+ * detalhe da imagem (em geral, o rosto), e não só para o centro.
+ */
+export function processarFoto(dados: Buffer): Promise<Buffer> {
+  return converter(dados, { width: LADO_FOTO, height: LADO_FOTO, fit: "cover", position: sharp.strategy.attention });
+}
+
+async function converter(dados: Buffer, redimensionar: ResizeOptions): Promise<Buffer> {
   if (dados.length === 0) throw new ImagemInvalidaError("O arquivo da imagem veio vazio.");
   if (dados.length > TAMANHO_MAXIMO) {
     throw new ImagemInvalidaError("A imagem passou de 4 MB. Escolha um arquivo menor.");
@@ -45,7 +60,7 @@ export async function processarImagem(dados: Buffer, ladoMaximo = LADO_MAXIMO): 
     return await sharp(dados, { limitInputPixels: 50_000_000 })
       // Aplica a rotação do EXIF antes de descartar os metadados (foto de celular "deitada").
       .rotate()
-      .resize({ width: ladoMaximo, height: ladoMaximo, fit: "inside", withoutEnlargement: true })
+      .resize(redimensionar)
       .webp({ quality: 85 })
       .toBuffer();
   } catch {

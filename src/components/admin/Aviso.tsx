@@ -4,7 +4,11 @@ import { createContext, useCallback, useContext, useRef, useState, type ReactNod
 import { estilos } from "./estilos";
 
 type Aviso = { tipo: "ok" | "erro"; texto: ReactNode };
-type ContextoAviso = { avisar: (aviso: Aviso | null) => void };
+/**
+ * `focar: false` só anuncia (aria-live), sem tirar o foco de onde está. Ex.: depois
+ * de "Subir", o foco continua no botão para a pessoa poder subir de novo.
+ */
+type ContextoAviso = { avisar: (aviso: Aviso | null, opcoes?: { focar?: boolean }) => void };
 
 const Contexto = createContext<ContextoAviso>({ avisar: () => {} });
 
@@ -18,9 +22,9 @@ export function ProvedorAviso({ children }: { children: ReactNode }) {
   const [aviso, setAviso] = useState<Aviso | null>(null);
   const caixa = useRef<HTMLDivElement>(null);
 
-  const avisar = useCallback((novo: Aviso | null) => {
+  const avisar = useCallback((novo: Aviso | null, { focar = true } = {}) => {
     setAviso(novo);
-    if (novo) requestAnimationFrame(() => caixa.current?.focus());
+    if (novo && focar) requestAnimationFrame(() => caixa.current?.focus());
   }, []);
 
   return (
