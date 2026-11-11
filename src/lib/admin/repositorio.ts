@@ -105,7 +105,16 @@ async function github<T>(metodo: string, rota: string, corpo?: unknown): Promise
     cache: "no-store",
   });
   const texto = await resposta.text();
-  const dados = (texto ? JSON.parse(texto) : null) as T;
+  let dados: T;
+  try {
+    dados = (texto ? JSON.parse(texto) : null) as T;
+  } catch {
+    // Numa instabilidade, o GitHub responde com uma página HTML em vez de JSON.
+    throw new RepositorioError(
+      `O GitHub respondeu de um jeito inesperado (${resposta.status}). Tente de novo em alguns minutos.`,
+      resposta.status,
+    );
+  }
   return { status: resposta.status, dados };
 }
 
@@ -156,31 +165,38 @@ const githubRepo = {
 
     // Confere os shas contra o commit que vai servir de base, não contra o branch:
     // se o branch andar depois disso, o update ref (sem force) recusa.
-    for (const arquivo of arquivos) {
-      if (arquivo.shaAnterior === undefined) continue;
-      const atual = await githubRepo.lerArquivo(arquivo.caminho, commitBase);
-      if ((atual?.sha ?? null) !== arquivo.shaAnterior) throw new ConflitoError(arquivo.caminho);
-    }
+    // As conferências não dependem umas das outras: vão todas juntas.
+    await Promise.all(
+      arquivos
+        .filter((arquivo) => arquivo.shaAnterior !== undefined)
+        .map(async (arquivo) => {
+          const atual = await githubRepo.lerArquivo(arquivo.caminho, commitBase);
+          if ((atual?.sha ?? null) !== arquivo.shaAnterior) throw new ConflitoError(arquivo.caminho);
+        }),
+    );
 
     // Apagar um caminho que não existe faz o GitHub recusar a tree inteira.
-    const apagar: string[] = [];
-    for (const caminho of opcoes.apagar ?? []) {
-      if (arquivos.some((a) => a.caminho === caminho)) continue;
-      const existe = await github<unknown>("GET", rotaConteudo(caminho, commitBase));
-      if (existe.status === 200) apagar.push(caminho);
-    }
+    const candidatos = (opcoes.apagar ?? []).filter((caminho) => !arquivos.some((a) => a.caminho === caminho));
+    const existem = await Promise.all(
+      candidatos.map(async (caminho) => (await github<unknown>("GET", rotaConteudo(caminho, commitBase))).status === 200),
+    );
+    const apagar = candidatos.filter((_, i) => existem[i]);
 
-    const entradas: { path: string; mode: "100644"; type: "blob"; sha: string | null }[] = [];
-    for (const arquivo of arquivos) {
-      const dados = typeof arquivo.conteudo === "string" ? Buffer.from(arquivo.conteudo, "utf8") : arquivo.conteudo;
-      const blob = await github<{ sha: string }>("POST", "/git/blobs", {
-        content: dados.toString("base64"),
-        encoding: "base64",
-      });
-      if (blob.status !== 201) falhou(`enviar ${arquivo.caminho}`, blob.status, blob.dados);
-      entradas.push({ path: arquivo.caminho, mode: "100644", type: "blob", sha: blob.dados.sha });
-    }
-    for (const caminho of apagar) entradas.push({ path: caminho, mode: "100644", type: "blob", sha: null });
+    const blobs = await Promise.all(
+      arquivos.map(async (arquivo) => {
+        const dados = typeof arquivo.conteudo === "string" ? Buffer.from(arquivo.conteudo, "utf8") : arquivo.conteudo;
+        const blob = await github<{ sha: string }>("POST", "/git/blobs", {
+          content: dados.toString("base64"),
+          encoding: "base64",
+        });
+        if (blob.status !== 201) falhou(`enviar ${arquivo.caminho}`, blob.status, blob.dados);
+        return { path: arquivo.caminho, mode: "100644" as const, type: "blob" as const, sha: blob.dados.sha as string | null };
+      }),
+    );
+    const entradas = [
+      ...blobs,
+      ...apagar.map((caminho) => ({ path: caminho, mode: "100644" as const, type: "blob" as const, sha: null })),
+    ];
 
     // Ex.: apagar imagens que nunca foram enviadas. Nada muda, então não há commit.
     if (entradas.length === 0) return { commitUrl: "" };
