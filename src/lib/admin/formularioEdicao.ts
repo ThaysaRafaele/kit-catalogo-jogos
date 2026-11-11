@@ -93,7 +93,8 @@ export function validarEdicao(e: EntradaEdicao, ano: string | number) {
   e.turmas.forEach((turma, i) => {
     const id = turma.id.trim();
     if (!id && !turma.lema.trim() && !turma.mentor.trim()) return;
-    if (!id) adicionar(["turmas", i, "id"], "Escreva o nome da turma (ex.: 2º G).");
+    // "PREENCHER" vira nome vazio no build: para a turma, é o mesmo que não ter nome.
+    if (!id || id.includes(MARCADOR_VAZIO)) adicionar(["turmas", i, "id"], "Escreva o nome da turma (ex.: 2º G).");
     else if (vistos.has(id)) adicionar(["turmas", i, "id"], `A turma "${id}" já está na lista.`);
     vistos.add(id);
   });
@@ -107,10 +108,21 @@ export function validarEdicao(e: EntradaEdicao, ano: string | number) {
   });
 
   // E o esquema do build, sempre: o resumo mostra todos os problemas de uma vez.
+  // O arquivo não tem as linhas vazias da tela: o índice do esquema volta a ser o da tela,
+  // para o erro cair no mesmo campo do aviso acima (e não aparecer duas vezes).
+  const naTela = {
+    turmas: e.turmas.flatMap((t, i) => (t.id.trim() || t.lema.trim() || t.mentor.trim() ? [i] : [])),
+    creditos: e.creditos.flatMap((c, i) => (c.funcao.trim() || c.nome.trim() ? [i] : [])),
+  };
   const resultado = edicaoSchema.safeParse(limparConteudo(gravar, { existeImagem: () => true }, []));
   if (!resultado.success) {
     for (const issue of resultado.error.issues) {
-      adicionar(issue.path.filter((p): p is string | number => typeof p !== "symbol"), issue.message);
+      const caminho = issue.path.filter((p): p is string | number => typeof p !== "symbol");
+      const [lista, indice] = caminho;
+      if ((lista === "turmas" || lista === "creditos") && typeof indice === "number") {
+        caminho[1] = naTela[lista][indice] ?? indice;
+      }
+      adicionar(caminho, issue.message);
     }
   }
   return { erros, gravar };
