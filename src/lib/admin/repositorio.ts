@@ -3,8 +3,8 @@
  * commit em GITHUB_BRANCH, e a Vercel publica sozinha.
  *
  * TODA a conversa com o GitHub fica neste arquivo. O resto do admin só conhece as
- * quatro funções exportadas no fim (lerArquivo, listarArquivos, salvarArquivos,
- * apagarArquivos).
+ * funções exportadas no fim (lerArquivo, listarArquivos, listarTudo,
+ * salvarArquivos, apagarArquivos).
  *
  * Com ADMIN_MODO=local, as mesmas funções gravam direto em content/ e public/,
  * para testar no localhost sem gerar commits.
@@ -38,10 +38,25 @@ export type ArquivoParaSalvar = {
   shaAnterior?: string | null;
 };
 
+export type Conferencia = { caminho: string; sha: string | null };
+
 export type OpcoesSalvar = {
   /** Arquivos a apagar no mesmo commit (ex.: imagens do slug antigo). */
   apagar?: string[];
+  /**
+   * Shas a conferir além dos `shaAnterior` dos arquivos gravados. Ex.: ao excluir
+   * um jogo, o sha que a ficha tinha quando a pessoa abriu o painel.
+   */
+  conferir?: Conferencia[];
 };
+
+/** Todas as conferências de um salvamento: as dos arquivos gravados e as avulsas. */
+function conferencias(arquivos: ArquivoParaSalvar[], opcoes: OpcoesSalvar): Conferencia[] {
+  return [
+    ...arquivos.flatMap((a) => (a.shaAnterior === undefined ? [] : [{ caminho: a.caminho, sha: a.shaAnterior }])),
+    ...(opcoes.conferir ?? []),
+  ];
+}
 
 export class ConflitoError extends Error {
   readonly caminho: string;
@@ -152,6 +167,23 @@ const githubRepo = {
     return Array.isArray(dados) ? dados.map((item) => item.path).sort() : [];
   },
 
+  /** Uma chamada só: a árvore inteira do branch, filtrada pela pasta. */
+  async listarTudo(pasta: string) {
+    const { branch } = configGithub();
+    const { status, dados } = await github<{ tree: { path: string; type: string }[]; truncated: boolean }>(
+      "GET",
+      `/git/trees/${encodeURIComponent(branch)}?recursive=1`,
+    );
+    if (status !== 200) falhou(`listar ${pasta}`, status, dados);
+    // Só passa de 100 mil arquivos com muitos anos de catálogo; aí a lista viria cortada.
+    if (dados.truncated) throw new RepositorioError("O repositório ficou grande demais para listar de uma vez.");
+    const prefixo = `${pasta}/`;
+    return dados.tree
+      .filter((item) => item.type === "blob" && item.path.startsWith(prefixo))
+      .map((item) => item.path)
+      .sort();
+  },
+
   /** blobs → tree → commit → update ref, tudo num único commit. */
   async salvarArquivos(arquivos: ArquivoParaSalvar[], mensagem: string, opcoes: OpcoesSalvar = {}) {
     const { branch } = configGithub();
@@ -167,12 +199,10 @@ const githubRepo = {
     // se o branch andar depois disso, o update ref (sem force) recusa.
     // As conferências não dependem umas das outras: vão todas juntas.
     await Promise.all(
-      arquivos
-        .filter((arquivo) => arquivo.shaAnterior !== undefined)
-        .map(async (arquivo) => {
-          const atual = await githubRepo.lerArquivo(arquivo.caminho, commitBase);
-          if ((atual?.sha ?? null) !== arquivo.shaAnterior) throw new ConflitoError(arquivo.caminho);
-        }),
+      conferencias(arquivos, opcoes).map(async ({ caminho, sha }) => {
+        const atual = await githubRepo.lerArquivo(caminho, commitBase);
+        if ((atual?.sha ?? null) !== sha) throw new ConflitoError(caminho);
+      }),
     );
 
     // Apagar um caminho que não existe faz o GitHub recusar a tree inteira.
@@ -251,16 +281,29 @@ const localRepo = {
       const itens = await readdir(noDisco(pasta));
       return itens.map((nome) => `${pasta}/${nome}`).sort();
     } catch (erro) {
-      if ((erro as NodeJS.ErrnoException).code === "ENOENT") return [];
+      // Pasta que não existe, ou um arquivo no lugar dela: nada a listar (igual ao GitHub).
+      if (["ENOENT", "ENOTDIR"].includes((erro as NodeJS.ErrnoException).code ?? "")) return [];
+      throw erro;
+    }
+  },
+
+  async listarTudo(pasta: string) {
+    try {
+      const itens = await readdir(noDisco(pasta), { recursive: true, withFileTypes: true });
+      return itens
+        .filter((item) => item.isFile())
+        .map((item) => path.relative(RAIZ, path.join(item.parentPath, item.name)).split(path.sep).join("/"))
+        .sort();
+    } catch (erro) {
+      if (["ENOENT", "ENOTDIR"].includes((erro as NodeJS.ErrnoException).code ?? "")) return [];
       throw erro;
     }
   },
 
   async salvarArquivos(arquivos: ArquivoParaSalvar[], mensagem: string, opcoes: OpcoesSalvar = {}) {
-    for (const arquivo of arquivos) {
-      if (arquivo.shaAnterior === undefined) continue;
-      const atual = await lerDoDisco(arquivo.caminho);
-      if ((atual ? shaDoGit(atual) : null) !== arquivo.shaAnterior) throw new ConflitoError(arquivo.caminho);
+    for (const { caminho, sha } of conferencias(arquivos, opcoes)) {
+      const atual = await lerDoDisco(caminho);
+      if ((atual ? shaDoGit(atual) : null) !== sha) throw new ConflitoError(caminho);
     }
     for (const arquivo of arquivos) {
       await mkdir(path.dirname(noDisco(arquivo.caminho)), { recursive: true });
@@ -295,6 +338,14 @@ export async function listarArquivos(pasta: string): Promise<string[]> {
   return implementacao().listarArquivos(validarPasta(pasta));
 }
 
+/**
+ * Todos os arquivos dentro da pasta, em qualquer nível. No GitHub é uma chamada só,
+ * em vez de uma por subpasta (ex.: as imagens de todos os jogos da edição).
+ */
+export async function listarTudo(pasta: string): Promise<string[]> {
+  return implementacao().listarTudo(validarPasta(pasta));
+}
+
 /** Grava todos os arquivos num único commit. `commitUrl` vem vazio no modo local. */
 export async function salvarArquivos(
   arquivos: ArquivoParaSalvar[],
@@ -303,10 +354,14 @@ export async function salvarArquivos(
 ): Promise<{ commitUrl: string }> {
   const validados = arquivos.map((a) => ({ ...a, caminho: validarCaminho(a.caminho) }));
   const apagar = (opcoes.apagar ?? []).map(validarCaminho);
-  return implementacao().salvarArquivos(validados, mensagem, { apagar });
+  const conferir = (opcoes.conferir ?? []).map((c) => ({ ...c, caminho: validarPasta(c.caminho) }));
+  return implementacao().salvarArquivos(validados, mensagem, { apagar, conferir });
 }
 
-/** Apaga os arquivos num único commit. */
-export async function apagarArquivos(caminhos: string[], mensagem: string): Promise<void> {
-  await salvarArquivos([], mensagem, { apagar: caminhos });
+/**
+ * Apaga os arquivos num único commit. Com `conferir`, recusa (ConflitoError) se
+ * algum arquivo mudou desde que foi lido.
+ */
+export async function apagarArquivos(caminhos: string[], mensagem: string, conferir: Conferencia[] = []): Promise<void> {
+  await salvarArquivos([], mensagem, { apagar: caminhos, conferir });
 }

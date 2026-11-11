@@ -4,13 +4,27 @@
  */
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
+import { CaminhoInvalidoError } from "./caminhos.ts";
 import { origemValida } from "./origem.ts";
+import { ConflitoError, RepositorioError } from "./repositorio.ts";
 import { COOKIE_SESSAO, verificarSessao, type Sessao } from "./sessao.ts";
 
 export { origemValida };
 
 export function respostaErro(mensagem: string, status: number) {
   return NextResponse.json({ erro: mensagem }, { status });
+}
+
+/** Converte os erros do repositório numa resposta com mensagem para o professor. */
+export function respostaDeFalha(erro: unknown) {
+  if (erro instanceof ConflitoError) return respostaErro(erro.message, 409);
+  if (erro instanceof CaminhoInvalidoError) return respostaErro(erro.message, 400);
+  if (erro instanceof RepositorioError) {
+    console.error(erro);
+    return respostaErro(erro.message, 502);
+  }
+  console.error(erro);
+  return respostaErro("Erro inesperado no servidor. Tente de novo; se continuar, avise a coordenação.", 500);
 }
 
 /** Para Route Handlers: a sessão, ou a resposta de erro pronta para devolver. */
