@@ -1,15 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import {
-  edicaoSchema,
-  jogoSchema,
-  MARCADOR_VAZIO,
-  mentoresSchema,
-  type Edicao,
-  type Jogo,
-  type Mentor,
-} from "./esquema.ts";
+import { edicaoSchema, jogoSchema, mentoresSchema, PADRAO_ANO, type Edicao, type Jogo, type Mentor } from "./esquema.ts";
+import { descreverPendencia, limparConteudo, type Pendencia } from "./limpeza.ts";
 
 export type EdicaoCompleta = Edicao & { jogos: Jogo[] };
 
@@ -23,49 +16,9 @@ export type Conteudo = {
 
 const RAIZ = process.cwd();
 const PASTA_EDICOES = path.join(RAIZ, "content", "edicoes");
-/** Listas que podem ficar vazias sem que isso seja uma pendência. */
-const LISTAS_OPCIONAIS = new Set(["disciplinas", "teclas"]);
-const CAMINHO_DE_IMAGEM = /\.(webp|png|jpe?g|gif|svg)$/i;
 
-/** Texto vazio, ou lista/objeto sem nenhum conteúdo dentro. */
-function vazio(valor: unknown): boolean {
-  if (valor === "") return true;
-  return typeof valor === "object" && valor !== null && Object.values(valor).every(vazio);
-}
-
-/**
- * Prepara o JSON para a validação: apara os textos e registra um aviso para cada
- * pendência. Campo com "PREENCHER" e imagem que não existe em public/ viram texto
- * vazio, e itens sem conteúdo saem das listas. As telas não exibem o que ficou vazio.
- */
-function limpar(atual: unknown, caminho: string, chave: string, avisos: string[]): unknown {
-  if (typeof atual === "string") {
-    const texto = atual.trim();
-    if (texto.includes(MARCADOR_VAZIO)) {
-      avisos.push(`${caminho}: campo a preencher`);
-      return "";
-    }
-    if (CAMINHO_DE_IMAGEM.test(texto) && !existsSync(path.join(RAIZ, "public", texto))) {
-      avisos.push(`${caminho}: imagem não encontrada (${texto}), usando placeholder`);
-      return "";
-    }
-    return texto;
-  }
-  if (Array.isArray(atual)) {
-    if (atual.length === 0 && !LISTAS_OPCIONAIS.has(chave)) {
-      avisos.push(`${caminho}: lista vazia`);
-    }
-    return atual
-      .map((item, i) => limpar(item, `${caminho}[${item?.nome ?? i}]`, chave, avisos))
-      .filter((item) => !vazio(item));
-  }
-  if (atual !== null && typeof atual === "object") {
-    return Object.fromEntries(
-      Object.entries(atual).map(([k, v]) => [k, limpar(v, `${caminho}.${k}`, k, avisos)]),
-    );
-  }
-  return atual;
-}
+/** No build, a imagem existe se está em public/. */
+const existeNoDisco = (src: string) => existsSync(path.join(RAIZ, "public", src));
 
 function lerJson<S extends z.ZodType>(arquivo: string, schema: S, avisos: string[]): z.output<S> {
   const relativo = path.relative(RAIZ, arquivo).replaceAll("\\", "/");
@@ -75,7 +28,10 @@ function lerJson<S extends z.ZodType>(arquivo: string, schema: S, avisos: string
   } catch (erro) {
     throw new Error(`${relativo}: JSON inválido. ${(erro as Error).message}`);
   }
-  const resultado = schema.safeParse(limpar(bruto, relativo, "", avisos));
+  const pendencias: Pendencia[] = [];
+  const limpo = limparConteudo(bruto, { existeImagem: existeNoDisco }, pendencias);
+  avisos.push(...pendencias.map((p) => descreverPendencia(relativo, p)));
+  const resultado = schema.safeParse(limpo);
   if (!resultado.success) {
     throw new Error(`${relativo}: conteúdo inválido.\n${z.prettifyError(resultado.error)}`);
   }
@@ -97,7 +53,7 @@ function carregarJogo(arquivo: string, edicao: Edicao, avisos: string[]): Jogo {
 
 function carregarEdicoes(avisos: string[]): EdicaoCompleta[] {
   const anos = readdirSync(PASTA_EDICOES, { withFileTypes: true })
-    .filter((item) => item.isDirectory() && /^\d{4}$/.test(item.name))
+    .filter((item) => item.isDirectory() && PADRAO_ANO.test(item.name))
     .map((item) => item.name)
     .filter((ano) => existsSync(path.join(PASTA_EDICOES, ano, "edicao.json")))
     .sort();

@@ -1,7 +1,15 @@
 import { z } from "zod";
 
+// Mensagens de erro em português (build, validação e admin).
+z.config(z.locales.ptBR());
+
 /** Marcador usado nos JSON para campo ainda sem conteúdo. */
 export const MARCADOR_VAZIO = "PREENCHER";
+
+/** Nome da pasta de cada edição em content/edicoes. */
+export const PADRAO_ANO = /^\d{4}$/;
+/** Slug do jogo: também é o nome do arquivo e da pasta das imagens. */
+export const PADRAO_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
  * Lista de linhas que só fazem sentido completas (função e nome, ação e teclas).
@@ -34,7 +42,7 @@ export const edicaoSchema = z.object({
 });
 
 export const jogoSchema = z.object({
-  slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "use minúsculas, números e hífens"),
+  slug: z.string().regex(PADRAO_SLUG, "use minúsculas, números e hífens"),
   turma: z.string(),
   estudio: z.string(),
   nome: z.string().min(1, "todo jogo precisa de nome"),
