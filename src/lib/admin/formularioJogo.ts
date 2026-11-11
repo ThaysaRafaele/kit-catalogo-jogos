@@ -102,10 +102,13 @@ export function jogoVazio(turma = ""): EntradaJogo {
   };
 }
 
-/** Texto do JSON para o formulário: o que não é texto, ou ainda tem "PREENCHER", vira campo vazio. */
-const texto = (valor: unknown) => (typeof valor === "string" && !valor.includes(MARCADOR_VAZIO) ? valor : "");
-const objeto = (valor: unknown) => (ehObjeto(valor) ? valor : {});
-const lista = (valor: unknown) => (Array.isArray(valor) ? valor : []);
+// Leitores do JSON para os formulários (jogo, edição, mentores): aceitam qualquer
+// coisa e devolvem sempre o tipo esperado.
+
+/** Texto do JSON: o que não é texto, ou ainda tem "PREENCHER", vira campo vazio. */
+export const texto = (valor: unknown) => (typeof valor === "string" && !valor.includes(MARCADOR_VAZIO) ? valor : "");
+export const objeto = (valor: unknown) => (ehObjeto(valor) ? valor : {});
+export const lista = (valor: unknown) => (Array.isArray(valor) ? valor : []);
 
 /**
  * Ficha gravada (qualquer formato) → estado do formulário. Também é por aqui que o

@@ -38,10 +38,13 @@ export async function publicarJogo(pedido: PedidoPublicacao) {
   if (!PADRAO_ANO.test(ano)) throw new ValidacaoError([], "Edição inválida.");
 
   // A mesma leitura validada do painel: edição com erro de esquema também bloqueia.
-  const [{ edicao, turmas }, slugs] = await Promise.all([lerEdicao(ano), listarJogos(ano)]);
+  const [{ edicao, turmas, sha: shaEdicao }, slugs] = await Promise.all([lerEdicao(ano), listarJogos(ano)]);
   if (!edicao) {
     throw new ValidacaoError([], "O edicao.json desta edição não existe ou tem erro. Corrija a edição antes.");
   }
+  // As turmas foram conferidas contra este edicao.json: se ele mudar até o commit
+  // (ex.: turma renomeada agora), o commit é recusado em vez de gravar turma velha.
+  const edicaoIgual = { caminho: caminhos.edicao(ano), sha: shaEdicao };
 
   const entrada: EntradaJogo = paraFormulario(pedido.entrada);
   const { erros, gravar } = validarJogo(entrada, {
@@ -69,12 +72,13 @@ export async function publicarJogo(pedido: PedidoPublicacao) {
     resultado = await salvarArquivos(
       [{ caminho: destino, conteudo, shaAnterior: null }, ...desenhos],
       mensagemCommit(ano, "adiciona", slug, autor),
-      { apagar: orfaos },
+      { apagar: orfaos, conferir: [edicaoIgual] },
     );
   } else if (slugOriginal === slug) {
     resultado = await salvarArquivos(
       [{ caminho: destino, conteudo, shaAnterior: sha }, ...desenhos],
       mensagemCommit(ano, "edita", slug, autor),
+      { conferir: [edicaoIgual] },
     );
   } else {
     // Slug trocado: ficha nova no lugar novo, a antiga sai, e os desenhos mudam de pasta.
@@ -85,7 +89,7 @@ export async function publicarJogo(pedido: PedidoPublicacao) {
       {
         // O que chega pelo "mover" fica; o resto da pasta nova (órfãos) sai.
         apagar: [origem, ...orfaos],
-        conferir: [{ caminho: origem, sha }],
+        conferir: [{ caminho: origem, sha }, edicaoIgual],
         mover: TIPOS_DESENHO.map((tipo) => ({
           de: caminhos.desenho(ano, slugOriginal, tipo),
           para: caminhos.desenho(ano, slug, tipo),

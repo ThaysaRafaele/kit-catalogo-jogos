@@ -4,7 +4,7 @@
  * branch agora, mesmo antes de o deploy terminar.
  */
 import { z } from "zod";
-import { edicaoSchema, jogoSchema, PADRAO_ANO, type Edicao } from "../esquema.ts";
+import { edicaoSchema, jogoSchema, mentoresSchema, PADRAO_ANO, type Edicao } from "../esquema.ts";
 import { limparConteudo, type Pendencia } from "../limpeza.ts";
 import { caminhos } from "./caminhos.ts";
 import { ehObjeto } from "./formularioJogo.ts";
@@ -122,8 +122,34 @@ export async function listarJogos(ano: string): Promise<string[]> {
     .map((nome) => nome.slice(0, -5));
 }
 
+/**
+ * Todos os jogos da edição, já lidos (uma leitura por jogo). `arquivos` é a pasta
+ * como estava: quem grava pode conferir que nenhum jogo entrou ou saiu desde então.
+ */
+export async function jogosDaEdicao(ano: string) {
+  const arquivos = await listarArquivos(caminhos.pastaJogos(ano));
+  const slugs = arquivos.map(nomeDe).filter((nome) => nome.endsWith(".json")).map((nome) => nome.slice(0, -5));
+  const lidos = await Promise.all(slugs.map((slug) => lerJson(caminhos.jogo(ano, slug))));
+  return { arquivos, jogos: slugs.flatMap((slug, i) => (lidos[i] ? [{ slug, lido: lidos[i] }] : [])) };
+}
+
+/** Nomes dos mentores do mentores.json, validado pelo mesmo esquema do build. */
+export async function nomesDosMentores(): Promise<string[]> {
+  const arquivo = await lerArquivo(caminhos.mentores());
+  if (!arquivo) return [];
+  try {
+    const limpo = limparConteudo(JSON.parse(arquivo.conteudo), { existeImagem: () => true }, []);
+    const resultado = mentoresSchema.safeParse(limpo);
+    return resultado.success ? resultado.data.map((m) => m.nome) : [];
+  } catch {
+    return [];
+  }
+}
+
 export type EdicaoLida = {
   edicao: Edicao | null;
+  /** Sha do edicao.json lido (null se não existe): quem grava um jogo confere se ele não mudou. */
+  sha: string | null;
   /** O edicao.json não existe (a pasta do ano pode existir sem ele). */
   semArquivo: boolean;
   erroEdicao?: string;
@@ -137,12 +163,13 @@ export type EdicaoLida = {
  */
 export async function lerEdicao(ano: string): Promise<EdicaoLida> {
   const lido = await lerJson(caminhos.edicao(ano));
-  if (!lido) return { edicao: null, semArquivo: true, erroEdicao: "Esta edição não tem edicao.json.", turmas: [] };
-  if ("erro" in lido) return { edicao: null, semArquivo: false, erroEdicao: lido.erro, turmas: [] };
+  if (!lido) return { edicao: null, sha: null, semArquivo: true, erroEdicao: "Esta edição não tem edicao.json.", turmas: [] };
+  const base = { sha: lido.sha, semArquivo: false };
+  if ("erro" in lido) return { ...base, edicao: null, erroEdicao: lido.erro, turmas: [] };
   const resultado = edicaoSchema.safeParse(limparConteudo(lido.dados, { existeImagem: () => true }, []));
   return resultado.success
-    ? { edicao: resultado.data, semArquivo: false, turmas: resultado.data.turmas.map((t) => t.id) }
-    : { edicao: null, semArquivo: false, erroEdicao: z.prettifyError(resultado.error), turmas: [] };
+    ? { ...base, edicao: resultado.data, turmas: resultado.data.turmas.map((t) => t.id) }
+    : { ...base, edicao: null, erroEdicao: z.prettifyError(resultado.error), turmas: [] };
 }
 
 /** O que o formulário do jogo (e o painel) precisa saber da edição. */
@@ -152,13 +179,14 @@ export async function contextoDoFormulario(ano: string) {
 }
 
 export async function painelDaEdicao(ano: string): Promise<PainelEdicao> {
-  const { edicao, erroEdicao, turmas, slugs, imagens: lista } = await contextoDoFormulario(ano);
+  const [{ edicao, erroEdicao, turmas }, { jogos: lidos }, lista] = await Promise.all([
+    lerEdicao(ano),
+    jogosDaEdicao(ano),
+    imagensDaEdicao(ano),
+  ]);
   const imagens = new Set(lista);
-
-  const lidos = await Promise.all(slugs.map((slug) => lerJson(caminhos.jogo(ano, slug))));
-  const jogos = slugs
-    .map((slug, i) => (lidos[i] ? resumir(slug, lidos[i], turmas, (src) => imagens.has(src)) : null))
-    .filter((jogo): jogo is ResumoJogo => jogo !== null)
+  const jogos = lidos
+    .map(({ slug, lido }) => resumir(slug, lido, turmas, (src) => imagens.has(src)))
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 
   return { ano, edicao, erroEdicao, turmas, jogos };

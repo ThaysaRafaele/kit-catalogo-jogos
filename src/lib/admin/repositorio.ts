@@ -57,7 +57,18 @@ export type OpcoesSalvar = {
    * gravados, vale o gravado (é uma imagem nova) e a origem só é apagada.
    */
   mover?: { de: string; para: string }[];
+  /**
+   * Conteúdo de uma pasta como estava na leitura. Se alguém criou ou apagou um
+   * arquivo nela desde então, o commit é recusado (ex.: um jogo novo numa turma
+   * que está sendo renomeada).
+   */
+  conferirPasta?: { pasta: string; itens: string[] };
 };
+
+function mesmaLista(a: string[], b: string[]) {
+  const [x, y] = [[...a].sort(), [...b].sort()];
+  return x.length === y.length && x.every((item, i) => item === y[i]);
+}
 
 /** Todas as conferências de um salvamento: as dos arquivos gravados e as avulsas. */
 function conferencias(arquivos: ArquivoParaSalvar[], opcoes: OpcoesSalvar): Conferencia[] {
@@ -168,9 +179,8 @@ const githubRepo = {
     return { conteudo, sha: dados.sha };
   },
 
-  async listarArquivos(pasta: string) {
-    const { branch } = configGithub();
-    const { status, dados } = await github<ItemConteudo[]>("GET", rotaConteudo(pasta, branch));
+  async listarArquivos(pasta: string, ref = configGithub().branch) {
+    const { status, dados } = await github<ItemConteudo[]>("GET", rotaConteudo(pasta, ref));
     if (status === 404) return [];
     if (status !== 200) falhou(`listar ${pasta}`, status, dados);
     return Array.isArray(dados) ? dados.map((item) => item.path).sort() : [];
@@ -207,12 +217,21 @@ const githubRepo = {
     // Confere os shas contra o commit que vai servir de base, não contra o branch:
     // se o branch andar depois disso, o update ref (sem force) recusa.
     // As conferências não dependem umas das outras: vão todas juntas.
-    await Promise.all(
-      conferencias(arquivos, opcoes).map(async ({ caminho, sha }) => {
+    const { conferirPasta } = opcoes;
+    await Promise.all([
+      ...conferencias(arquivos, opcoes).map(async ({ caminho, sha }) => {
         const atual = await githubRepo.lerArquivo(caminho, commitBase);
         if ((atual?.sha ?? null) !== sha) throw new ConflitoError(caminho);
       }),
-    );
+      ...(conferirPasta
+        ? [
+            (async () => {
+              const atuais = await githubRepo.listarArquivos(conferirPasta.pasta, commitBase);
+              if (!mesmaLista(atuais, conferirPasta.itens)) throw new ConflitoError(conferirPasta.pasta);
+            })(),
+          ]
+        : []),
+    ]);
 
     const gravados = new Set(arquivos.map((a) => a.caminho));
 
@@ -337,6 +356,10 @@ const localRepo = {
       const atual = await lerDoDisco(caminho);
       if ((atual ? shaDoGit(atual) : null) !== sha) throw new ConflitoError(caminho);
     }
+    if (opcoes.conferirPasta) {
+      const atuais = await localRepo.listarArquivos(opcoes.conferirPasta.pasta);
+      if (!mesmaLista(atuais, opcoes.conferirPasta.itens)) throw new ConflitoError(opcoes.conferirPasta.pasta);
+    }
     // Sem commit no disco, a ordem evita estados quebrados se algo falhar no meio:
     // primeiro tudo o que é escrito, e só no fim o que é apagado.
     const gravados = new Set(arquivos.map((a) => a.caminho));
@@ -402,7 +425,8 @@ export async function salvarArquivos(
   const apagar = (opcoes.apagar ?? []).map(validarCaminho);
   const conferir = (opcoes.conferir ?? []).map((c) => ({ ...c, caminho: validarPasta(c.caminho) }));
   const mover = (opcoes.mover ?? []).map((m) => ({ de: validarCaminho(m.de), para: validarCaminho(m.para) }));
-  return implementacao().salvarArquivos(validados, mensagem, { apagar, conferir, mover });
+  const conferirPasta = opcoes.conferirPasta && { ...opcoes.conferirPasta, pasta: validarPasta(opcoes.conferirPasta.pasta) };
+  return implementacao().salvarArquivos(validados, mensagem, { apagar, conferir, mover, conferirPasta });
 }
 
 /**
