@@ -1,0 +1,296 @@
+/**
+ * Armazenamento do admin. O GitHub é o "banco de dados": cada salvamento vira um
+ * commit em GITHUB_BRANCH, e a Vercel publica sozinha.
+ *
+ * TODA a conversa com o GitHub fica neste arquivo. O resto do admin só conhece as
+ * quatro funções exportadas no fim (lerArquivo, listarArquivos, salvarArquivos,
+ * apagarArquivos).
+ *
+ * Com ADMIN_MODO=local, as mesmas funções gravam direto em content/ e public/,
+ * para testar no localhost sem gerar commits.
+ *
+ * ─── FUTURO: trocar o token pessoal por um GitHub App da organização ───────────
+ * Só muda a função `cabecalhosAutenticacao` (e as variáveis de ambiente):
+ *   1. Criar o App na organização com a permissão "Contents: read and write" e
+ *      instalar só neste repositório.
+ *   2. Trocar GITHUB_TOKEN por GITHUB_APP_ID, GITHUB_APP_CHAVE_PRIVADA e
+ *      GITHUB_APP_INSTALACAO_ID.
+ *   3. Em `cabecalhosAutenticacao`, assinar um JWT (RS256, validade de 10 min) com
+ *      a chave privada, chamar POST /app/installations/{id}/access_tokens e usar o
+ *      token devolvido (vale 1h; guardar em memória e renovar perto de expirar).
+ * Os commits passam a aparecer como feitos pelo App ("nome-do-app[bot]").
+ * ────────────────────────────────────────────────────────────────────────────────
+ */
+import { createHash } from "node:crypto";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { validarCaminho, validarPasta } from "./caminhos.ts";
+
+export type ArquivoParaSalvar = {
+  caminho: string;
+  conteudo: Buffer | string;
+  /**
+   * Sha que o arquivo tinha quando foi lido para edição. Se for diferente do sha
+   * atual, alguém salvou antes: o commit é recusado com ConflitoError.
+   * `null` exige que o arquivo ainda não exista (ex.: jogo novo, slug livre).
+   * Sem o campo, não há conferência (ex.: imagens).
+   */
+  shaAnterior?: string | null;
+};
+
+export type OpcoesSalvar = {
+  /** Arquivos a apagar no mesmo commit (ex.: imagens do slug antigo). */
+  apagar?: string[];
+};
+
+export class ConflitoError extends Error {
+  readonly caminho: string;
+  constructor(caminho: string) {
+    super("Outra pessoa salvou este conteúdo agora. Recarregue a página para ver a versão nova.");
+    this.name = "ConflitoError";
+    this.caminho = caminho;
+  }
+}
+
+export class RepositorioError extends Error {
+  readonly status?: number;
+  constructor(mensagem: string, status?: number) {
+    super(mensagem);
+    this.name = "RepositorioError";
+    this.status = status;
+  }
+}
+
+/** Sha que o git daria ao arquivo (o mesmo que a API do GitHub devolve). */
+export function shaDoGit(conteudo: Buffer | string): string {
+  const dados = typeof conteudo === "string" ? Buffer.from(conteudo, "utf8") : conteudo;
+  return createHash("sha1")
+    .update(`blob ${dados.length}\0`)
+    .update(dados)
+    .digest("hex");
+}
+
+// ─── Modo GitHub ────────────────────────────────────────────────────────────────
+
+type ConfigGithub = { owner: string; repo: string; branch: string };
+
+function configGithub(): ConfigGithub {
+  const owner = process.env.GITHUB_OWNER;
+  const repo = process.env.GITHUB_REPO;
+  const branch = process.env.GITHUB_BRANCH || "main";
+  if (!owner || !repo) {
+    throw new RepositorioError("Configure GITHUB_OWNER e GITHUB_REPO (veja o .env.example).");
+  }
+  return { owner, repo, branch };
+}
+
+/** Único ponto de autenticação. É aqui que entra o GitHub App no futuro. */
+async function cabecalhosAutenticacao(): Promise<Record<string, string>> {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) throw new RepositorioError("Configure GITHUB_TOKEN (veja o .env.example).");
+  return { Authorization: `Bearer ${token}` };
+}
+
+async function github<T>(metodo: string, rota: string, corpo?: unknown): Promise<{ status: number; dados: T }> {
+  const { owner, repo } = configGithub();
+  const resposta = await fetch(`https://api.github.com/repos/${owner}/${repo}${rota}`, {
+    method: metodo,
+    headers: {
+      ...(await cabecalhosAutenticacao()),
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(corpo ? { "Content-Type": "application/json" } : {}),
+    },
+    body: corpo ? JSON.stringify(corpo) : undefined,
+    cache: "no-store",
+  });
+  const texto = await resposta.text();
+  const dados = (texto ? JSON.parse(texto) : null) as T;
+  return { status: resposta.status, dados };
+}
+
+function falhou(acao: string, status: number, dados: unknown): never {
+  const detalhe = (dados as { message?: string } | null)?.message ?? "sem detalhes";
+  if (status === 401) throw new RepositorioError("Token do GitHub inválido ou expirado.", status);
+  if (status === 403) throw new RepositorioError(`Sem permissão no GitHub para ${acao}: ${detalhe}`, status);
+  throw new RepositorioError(`Erro do GitHub ao ${acao} (${status}): ${detalhe}`, status);
+}
+
+/** Codifica cada parte do caminho, para turmas e nomes com acento. */
+function rotaConteudo(caminho: string, ref: string) {
+  const codificado = caminho.split("/").map(encodeURIComponent).join("/");
+  return `/contents/${codificado}?ref=${encodeURIComponent(ref)}`;
+}
+
+type ItemConteudo = { type: string; path: string; sha: string; content?: string; encoding?: string };
+
+const githubRepo = {
+  async lerArquivo(caminho: string, ref = configGithub().branch) {
+    const { status, dados } = await github<ItemConteudo>("GET", rotaConteudo(caminho, ref));
+    if (status === 404) return null;
+    if (status !== 200) falhou(`ler ${caminho}`, status, dados);
+    if (Array.isArray(dados) || dados.type !== "file") return null;
+    // Arquivos acima de 1 MB vêm sem conteúdo; aqui só lemos JSON, bem menores.
+    const conteudo = Buffer.from(dados.content ?? "", "base64").toString("utf8");
+    return { conteudo, sha: dados.sha };
+  },
+
+  async listarArquivos(pasta: string) {
+    const { branch } = configGithub();
+    const { status, dados } = await github<ItemConteudo[]>("GET", rotaConteudo(pasta, branch));
+    if (status === 404) return [];
+    if (status !== 200) falhou(`listar ${pasta}`, status, dados);
+    return Array.isArray(dados) ? dados.map((item) => item.path).sort() : [];
+  },
+
+  /** blobs → tree → commit → update ref, tudo num único commit. */
+  async salvarArquivos(arquivos: ArquivoParaSalvar[], mensagem: string, opcoes: OpcoesSalvar = {}) {
+    const { branch } = configGithub();
+
+    const ref = await github<{ object: { sha: string } }>("GET", `/git/ref/heads/${encodeURIComponent(branch)}`);
+    if (ref.status !== 200) falhou(`ler o branch ${branch}`, ref.status, ref.dados);
+    const commitBase = ref.dados.object.sha;
+
+    const base = await github<{ tree: { sha: string } }>("GET", `/git/commits/${commitBase}`);
+    if (base.status !== 200) falhou("ler o último commit", base.status, base.dados);
+
+    // Confere os shas contra o commit que vai servir de base, não contra o branch:
+    // se o branch andar depois disso, o update ref (sem force) recusa.
+    for (const arquivo of arquivos) {
+      if (arquivo.shaAnterior === undefined) continue;
+      const atual = await githubRepo.lerArquivo(arquivo.caminho, commitBase);
+      if ((atual?.sha ?? null) !== arquivo.shaAnterior) throw new ConflitoError(arquivo.caminho);
+    }
+
+    // Apagar um caminho que não existe faz o GitHub recusar a tree inteira.
+    const apagar: string[] = [];
+    for (const caminho of opcoes.apagar ?? []) {
+      if (arquivos.some((a) => a.caminho === caminho)) continue;
+      const existe = await github<unknown>("GET", rotaConteudo(caminho, commitBase));
+      if (existe.status === 200) apagar.push(caminho);
+    }
+
+    const entradas: { path: string; mode: "100644"; type: "blob"; sha: string | null }[] = [];
+    for (const arquivo of arquivos) {
+      const dados = typeof arquivo.conteudo === "string" ? Buffer.from(arquivo.conteudo, "utf8") : arquivo.conteudo;
+      const blob = await github<{ sha: string }>("POST", "/git/blobs", {
+        content: dados.toString("base64"),
+        encoding: "base64",
+      });
+      if (blob.status !== 201) falhou(`enviar ${arquivo.caminho}`, blob.status, blob.dados);
+      entradas.push({ path: arquivo.caminho, mode: "100644", type: "blob", sha: blob.dados.sha });
+    }
+    for (const caminho of apagar) entradas.push({ path: caminho, mode: "100644", type: "blob", sha: null });
+
+    // Ex.: apagar imagens que nunca foram enviadas. Nada muda, então não há commit.
+    if (entradas.length === 0) return { commitUrl: "" };
+
+    const tree = await github<{ sha: string }>("POST", "/git/trees", {
+      base_tree: base.dados.tree.sha,
+      tree: entradas,
+    });
+    if (tree.status !== 201) falhou("montar a árvore do commit", tree.status, tree.dados);
+
+    const commit = await github<{ sha: string; html_url: string }>("POST", "/git/commits", {
+      message: mensagem,
+      tree: tree.dados.sha,
+      parents: [commitBase],
+    });
+    if (commit.status !== 201) falhou("criar o commit", commit.status, commit.dados);
+
+    const atualizado = await github<unknown>("PATCH", `/git/refs/heads/${encodeURIComponent(branch)}`, {
+      sha: commit.dados.sha,
+      force: false,
+    });
+    // 422 aqui = o branch andou entre a leitura e o commit: alguém salvou junto.
+    if (atualizado.status === 422) throw new ConflitoError(arquivos[0]?.caminho ?? apagar[0]);
+    if (atualizado.status !== 200) falhou("atualizar o branch", atualizado.status, atualizado.dados);
+
+    return { commitUrl: commit.dados.html_url };
+  },
+};
+
+// ─── Modo local (ADMIN_MODO=local) ──────────────────────────────────────────────
+
+const RAIZ = process.cwd();
+const noDisco = (caminho: string) => path.join(RAIZ, ...caminho.split("/"));
+
+async function lerDoDisco(caminho: string): Promise<Buffer | null> {
+  try {
+    return await readFile(noDisco(caminho));
+  } catch (erro) {
+    if ((erro as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw erro;
+  }
+}
+
+const localRepo = {
+  async lerArquivo(caminho: string) {
+    const dados = await lerDoDisco(caminho);
+    return dados ? { conteudo: dados.toString("utf8"), sha: shaDoGit(dados) } : null;
+  },
+
+  async listarArquivos(pasta: string) {
+    try {
+      const itens = await readdir(noDisco(pasta));
+      return itens.map((nome) => `${pasta}/${nome}`).sort();
+    } catch (erro) {
+      if ((erro as NodeJS.ErrnoException).code === "ENOENT") return [];
+      throw erro;
+    }
+  },
+
+  async salvarArquivos(arquivos: ArquivoParaSalvar[], mensagem: string, opcoes: OpcoesSalvar = {}) {
+    for (const arquivo of arquivos) {
+      if (arquivo.shaAnterior === undefined) continue;
+      const atual = await lerDoDisco(arquivo.caminho);
+      if ((atual ? shaDoGit(atual) : null) !== arquivo.shaAnterior) throw new ConflitoError(arquivo.caminho);
+    }
+    for (const arquivo of arquivos) {
+      await mkdir(path.dirname(noDisco(arquivo.caminho)), { recursive: true });
+      await writeFile(noDisco(arquivo.caminho), arquivo.conteudo);
+    }
+    for (const caminho of opcoes.apagar ?? []) {
+      if (arquivos.some((a) => a.caminho === caminho)) continue;
+      await rm(noDisco(caminho), { force: true });
+    }
+    console.info(`[admin local] ${mensagem}`);
+    return { commitUrl: "" };
+  },
+};
+
+// ─── Interface pública ──────────────────────────────────────────────────────────
+
+export function modoLocal() {
+  return process.env.ADMIN_MODO === "local";
+}
+
+function implementacao() {
+  return modoLocal() ? localRepo : githubRepo;
+}
+
+/** Lê um arquivo de texto. `null` se não existir. */
+export async function lerArquivo(caminho: string): Promise<{ conteudo: string; sha: string } | null> {
+  return implementacao().lerArquivo(validarPasta(caminho));
+}
+
+/** Caminhos (a partir da raiz do repositório) dos itens de uma pasta, em ordem. */
+export async function listarArquivos(pasta: string): Promise<string[]> {
+  return implementacao().listarArquivos(validarPasta(pasta));
+}
+
+/** Grava todos os arquivos num único commit. `commitUrl` vem vazio no modo local. */
+export async function salvarArquivos(
+  arquivos: ArquivoParaSalvar[],
+  mensagem: string,
+  opcoes: OpcoesSalvar = {},
+): Promise<{ commitUrl: string }> {
+  const validados = arquivos.map((a) => ({ ...a, caminho: validarCaminho(a.caminho) }));
+  const apagar = (opcoes.apagar ?? []).map(validarCaminho);
+  return implementacao().salvarArquivos(validados, mensagem, { apagar });
+}
+
+/** Apaga os arquivos num único commit. */
+export async function apagarArquivos(caminhos: string[], mensagem: string): Promise<void> {
+  await salvarArquivos([], mensagem, { apagar: caminhos });
+}
