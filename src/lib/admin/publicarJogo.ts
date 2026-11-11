@@ -6,7 +6,7 @@ import { jogoSchema, PADRAO_ANO } from "../esquema.ts";
 import { caminhos } from "./caminhos.ts";
 import { mensagemCommit } from "./commit.ts";
 import { lerEdicao, listarJogos } from "./dados.ts";
-import { paraFormulario, TIPOS_DESENHO, type EntradaJogo } from "./formularioJogo.ts";
+import { NOMES_DESENHO, paraFormulario, TIPOS_DESENHO, type EntradaJogo, type TipoDesenho } from "./formularioJogo.ts";
 import { formatarJson } from "./json.ts";
 import { lerArquivo, salvarArquivos, shaDoGit } from "./repositorio.ts";
 import { validarJogo, type ErroCampo } from "./validacaoJogo.ts";
@@ -29,6 +29,8 @@ export type PedidoPublicacao = {
   /** Sha da ficha quando o formulário foi aberto; null para jogo novo. */
   sha: string | null;
   autor: string;
+  /** Desenhos novos, já conferidos e convertidos (processarImagem), que entram no mesmo commit. */
+  desenhos?: Partial<Record<TipoDesenho, Buffer>>;
 };
 
 export async function publicarJogo(pedido: PedidoPublicacao) {
@@ -55,25 +57,30 @@ export async function publicarJogo(pedido: PedidoPublicacao) {
   // Desenhos que sobraram na pasta do slug (de um jogo apagado à mão, por exemplo)
   // não podem ser herdados por um jogo que chega a esse endereço.
   const orfaos = TIPOS_DESENHO.map((tipo) => caminhos.desenho(ano, slug, tipo));
+  // Desenho novo vai direto para a pasta do slug final (no rename, ganha do "mover").
+  const desenhos = TIPOS_DESENHO.flatMap((tipo) => {
+    const dados = pedido.desenhos?.[tipo];
+    return dados ? [{ caminho: caminhos.desenho(ano, slug, tipo), conteudo: dados }] : [];
+  });
 
   let resultado: { commitUrl: string };
   if (!slugOriginal) {
     // Jogo novo: shaAnterior null garante que ninguém criou o mesmo slug no meio-tempo.
     resultado = await salvarArquivos(
-      [{ caminho: destino, conteudo, shaAnterior: null }],
+      [{ caminho: destino, conteudo, shaAnterior: null }, ...desenhos],
       mensagemCommit(ano, "adiciona", slug, autor),
       { apagar: orfaos },
     );
   } else if (slugOriginal === slug) {
     resultado = await salvarArquivos(
-      [{ caminho: destino, conteudo, shaAnterior: sha }],
+      [{ caminho: destino, conteudo, shaAnterior: sha }, ...desenhos],
       mensagemCommit(ano, "edita", slug, autor),
     );
   } else {
     // Slug trocado: ficha nova no lugar novo, a antiga sai, e os desenhos mudam de pasta.
     const origem = caminhos.jogo(ano, slugOriginal);
     resultado = await salvarArquivos(
-      [{ caminho: destino, conteudo, shaAnterior: null }],
+      [{ caminho: destino, conteudo, shaAnterior: null }, ...desenhos],
       mensagemCommit(ano, "renomeia", `${slugOriginal} para ${slug}`, autor),
       {
         // O que chega pelo "mover" fica; o resto da pasta nova (órfãos) sai.
@@ -88,6 +95,23 @@ export async function publicarJogo(pedido: PedidoPublicacao) {
   }
 
   return { slug, sha: shaDoGit(conteudo), commitUrl: resultado.commitUrl };
+}
+
+/**
+ * Envia um desenho sozinho, num commit próprio. Usado quando os desenhos juntos
+ * passariam do limite de uma requisição: a ficha é publicada antes, sem eles.
+ */
+export async function enviarDesenho(ano: string, slug: string, tipo: TipoDesenho, dados: Buffer, autor: string) {
+  const ficha = caminhos.jogo(ano, slug);
+  const atual = await lerArquivo(ficha);
+  if (!atual) throw new ValidacaoError([], "Este jogo não existe mais. Recarregue a página.");
+  // A conferência entra no commit: se o jogo for excluído ou renomeado entre a
+  // leitura e a gravação, o desenho não fica órfão numa pasta sem ficha.
+  return salvarArquivos(
+    [{ caminho: caminhos.desenho(ano, slug, tipo), conteudo: dados }],
+    mensagemCommit(ano, "envia", `${NOMES_DESENHO[tipo].toLowerCase()} de ${slug}`, autor),
+    { conferir: [{ caminho: ficha, sha: atual.sha }] },
+  );
 }
 
 /** Para o formulário de edição: a ficha atual pronta para os campos. */

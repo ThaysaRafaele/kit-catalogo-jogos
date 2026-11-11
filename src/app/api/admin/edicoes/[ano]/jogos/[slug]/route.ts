@@ -25,7 +25,10 @@ export async function PUT(req: NextRequest, { params }: Contexto) {
   if (!corpo) return respostaErro("Pedido sem a ficha do jogo.", 400);
   if (!corpo.sha) return respostaErro("Recarregue a página e tente publicar de novo.", 400);
 
-  return responderPublicacao({ ano, entrada: corpo.entrada, slugOriginal: slug, sha: corpo.sha, autor: sessao.nome });
+  return responderPublicacao(
+    { ano, entrada: corpo.entrada, slugOriginal: slug, sha: corpo.sha, autor: sessao.nome },
+    corpo.arquivos,
+  );
 }
 
 /**

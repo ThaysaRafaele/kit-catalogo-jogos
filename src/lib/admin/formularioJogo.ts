@@ -7,6 +7,13 @@ import { MARCADOR_VAZIO, type Tema } from "../esquema.ts";
 export type TipoDesenho = "protagonista" | "antagonista" | "mundo";
 export const TIPOS_DESENHO: TipoDesenho[] = ["protagonista", "antagonista", "mundo"];
 
+/** "Desenho do protagonista": o nome usado em toda tela e mensagem (servidor e navegador). */
+export const NOMES_DESENHO: Record<TipoDesenho, string> = {
+  protagonista: "Desenho do protagonista",
+  antagonista: "Desenho do antagonista",
+  mundo: "Desenho do mundo",
+};
+
 type Desenho = { src: string; alt: string };
 
 /** O formulário guarda tudo como texto. As teclas, por exemplo, ficam como "W, A, S, D". */

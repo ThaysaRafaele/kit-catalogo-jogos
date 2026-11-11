@@ -15,5 +15,8 @@ export async function POST(req: NextRequest, { params }: Contexto) {
   if (!corpo) return respostaErro("Pedido sem a ficha do jogo.", 400);
 
   const { ano } = await params;
-  return responderPublicacao({ ano, entrada: corpo.entrada, slugOriginal: null, sha: null, autor: sessao.nome });
+  return responderPublicacao(
+    { ano, entrada: corpo.entrada, slugOriginal: null, sha: null, autor: sessao.nome },
+    corpo.arquivos,
+  );
 }
