@@ -7,15 +7,11 @@ import { z } from "zod";
 import { edicaoSchema, jogoSchema, PADRAO_ANO, type Edicao } from "../esquema.ts";
 import { limparConteudo, type Pendencia } from "../limpeza.ts";
 import { caminhos } from "./caminhos.ts";
+import { ehObjeto } from "./formularioJogo.ts";
 import { lerArquivo, listarArquivos, listarTudo } from "./repositorio.ts";
 import { descreverParaPainel } from "./rotulos.ts";
 
 const nomeDe = (caminho: string) => caminho.slice(caminho.lastIndexOf("/") + 1);
-
-/** Objeto JSON comum (não null, não lista): o formato de toda ficha e edição. */
-export function ehObjeto(valor: unknown): valor is Record<string, unknown> {
-  return typeof valor === "object" && valor !== null && !Array.isArray(valor);
-}
 
 /** Anos com pasta em content/edicoes, do mais recente para o mais antigo. */
 export async function listarAnos(): Promise<string[]> {
@@ -117,25 +113,48 @@ function resumir(
   return { ...base, status: lista.length > 0 ? "pendente" : "completo", pendencias: lista };
 }
 
+/** Slugs dos jogos da edição (pelos nomes dos arquivos). */
+export async function listarJogos(ano: string): Promise<string[]> {
+  const arquivos = await listarArquivos(caminhos.pastaJogos(ano));
+  return arquivos
+    .map(nomeDe)
+    .filter((nome) => nome.endsWith(".json"))
+    .map((nome) => nome.slice(0, -5));
+}
+
+export type EdicaoLida = {
+  edicao: Edicao | null;
+  /** O edicao.json não existe (a pasta do ano pode existir sem ele). */
+  semArquivo: boolean;
+  erroEdicao?: string;
+  /** Ids das turmas, na ordem da edição; vazio se a edição não for válida. */
+  turmas: string[];
+};
+
+/**
+ * Lê o edicao.json e devolve a edição validada pelo mesmo esquema do build, ou o
+ * motivo de não estar válida. Toda tela e rota do admin lê a edição por aqui.
+ */
+export async function lerEdicao(ano: string): Promise<EdicaoLida> {
+  const lido = await lerJson(caminhos.edicao(ano));
+  if (!lido) return { edicao: null, semArquivo: true, erroEdicao: "Esta edição não tem edicao.json.", turmas: [] };
+  if ("erro" in lido) return { edicao: null, semArquivo: false, erroEdicao: lido.erro, turmas: [] };
+  const resultado = edicaoSchema.safeParse(limparConteudo(lido.dados, { existeImagem: () => true }, []));
+  return resultado.success
+    ? { edicao: resultado.data, semArquivo: false, turmas: resultado.data.turmas.map((t) => t.id) }
+    : { edicao: null, semArquivo: false, erroEdicao: z.prettifyError(resultado.error), turmas: [] };
+}
+
+/** O que o formulário do jogo (e o painel) precisa saber da edição. */
+export async function contextoDoFormulario(ano: string) {
+  const [edicaoLida, slugs, imagens] = await Promise.all([lerEdicao(ano), listarJogos(ano), imagensDaEdicao(ano)]);
+  return { ...edicaoLida, slugs, imagens: [...imagens] };
+}
+
 export async function painelDaEdicao(ano: string): Promise<PainelEdicao> {
-  const [lidoEdicao, arquivosJogos, imagens] = await Promise.all([
-    lerJson(caminhos.edicao(ano)),
-    listarArquivos(caminhos.pastaJogos(ano)),
-    imagensDaEdicao(ano),
-  ]);
+  const { edicao, erroEdicao, turmas, slugs, imagens: lista } = await contextoDoFormulario(ano);
+  const imagens = new Set(lista);
 
-  let edicao: Edicao | null = null;
-  let erroEdicao: string | undefined;
-  if (!lidoEdicao) erroEdicao = "Esta edição não tem edicao.json.";
-  else if ("erro" in lidoEdicao) erroEdicao = lidoEdicao.erro;
-  else {
-    const resultado = edicaoSchema.safeParse(limparConteudo(lidoEdicao.dados, { existeImagem: () => true }, []));
-    if (resultado.success) edicao = resultado.data;
-    else erroEdicao = z.prettifyError(resultado.error);
-  }
-  const turmas = edicao?.turmas.map((t) => t.id) ?? [];
-
-  const slugs = arquivosJogos.map(nomeDe).filter((nome) => nome.endsWith(".json")).map((nome) => nome.slice(0, -5));
   const lidos = await Promise.all(slugs.map((slug) => lerJson(caminhos.jogo(ano, slug))));
   const jogos = slugs
     .map((slug, i) => (lidos[i] ? resumir(slug, lidos[i], turmas, (src) => imagens.has(src)) : null))

@@ -41,13 +41,22 @@ export type ArquivoParaSalvar = {
 export type Conferencia = { caminho: string; sha: string | null };
 
 export type OpcoesSalvar = {
-  /** Arquivos a apagar no mesmo commit (ex.: imagens do slug antigo). */
+  /**
+   * Arquivos a apagar no mesmo commit (ex.: imagens do slug antigo). Um caminho que
+   * é gravado, ou que recebe um arquivo pelo `mover`, não é apagado.
+   */
   apagar?: string[];
   /**
    * Shas a conferir além dos `shaAnterior` dos arquivos gravados. Ex.: ao excluir
    * um jogo, o sha que a ficha tinha quando a pessoa abriu o painel.
    */
   conferir?: Conferencia[];
+  /**
+   * Arquivos que mudam de lugar no mesmo commit (ex.: desenhos quando o slug muda).
+   * Origem que não existe é ignorada. Se o destino também está entre os arquivos
+   * gravados, vale o gravado (é uma imagem nova) e a origem só é apagada.
+   */
+  mover?: { de: string; para: string }[];
 };
 
 /** Todas as conferências de um salvamento: as dos arquivos gravados e as avulsas. */
@@ -205,8 +214,21 @@ const githubRepo = {
       }),
     );
 
+    const gravados = new Set(arquivos.map((a) => a.caminho));
+
+    // Mover no git não precisa baixar nada: o destino aponta para o mesmo blob da origem.
+    const movidos = (
+      await Promise.all(
+        (opcoes.mover ?? []).map(async ({ de, para }) => {
+          const { status, dados } = await github<ItemConteudo>("GET", rotaConteudo(de, commitBase));
+          return status === 200 && !Array.isArray(dados) && dados.type === "file" ? { de, para, sha: dados.sha } : null;
+        }),
+      )
+    ).filter((m) => m !== null);
+
     // Apagar um caminho que não existe faz o GitHub recusar a tree inteira.
-    const candidatos = (opcoes.apagar ?? []).filter((caminho) => !arquivos.some((a) => a.caminho === caminho));
+    const tocados = new Set([...movidos.map((m) => m.de), ...movidos.map((m) => m.para)]);
+    const candidatos = (opcoes.apagar ?? []).filter((caminho) => !gravados.has(caminho) && !tocados.has(caminho));
     const existem = await Promise.all(
       candidatos.map(async (caminho) => (await github<unknown>("GET", rotaConteudo(caminho, commitBase))).status === 200),
     );
@@ -223,9 +245,19 @@ const githubRepo = {
         return { path: arquivo.caminho, mode: "100644" as const, type: "blob" as const, sha: blob.dados.sha as string | null };
       }),
     );
+    const entrada = (caminho: string, sha: string | null) => ({
+      path: caminho,
+      mode: "100644" as const,
+      type: "blob" as const,
+      sha,
+    });
     const entradas = [
       ...blobs,
-      ...apagar.map((caminho) => ({ path: caminho, mode: "100644" as const, type: "blob" as const, sha: null })),
+      ...movidos.flatMap((m) => [
+        ...(gravados.has(m.para) ? [] : [entrada(m.para, m.sha)]),
+        ...(gravados.has(m.de) ? [] : [entrada(m.de, null)]),
+      ]),
+      ...apagar.map((caminho) => entrada(caminho, null)),
     ];
 
     // Ex.: apagar imagens que nunca foram enviadas. Nada muda, então não há commit.
@@ -305,13 +337,27 @@ const localRepo = {
       const atual = await lerDoDisco(caminho);
       if ((atual ? shaDoGit(atual) : null) !== sha) throw new ConflitoError(caminho);
     }
-    for (const arquivo of arquivos) {
-      await mkdir(path.dirname(noDisco(arquivo.caminho)), { recursive: true });
-      await writeFile(noDisco(arquivo.caminho), arquivo.conteudo);
+    // Sem commit no disco, a ordem evita estados quebrados se algo falhar no meio:
+    // primeiro tudo o que é escrito, e só no fim o que é apagado.
+    const gravados = new Set(arquivos.map((a) => a.caminho));
+    const movidos: { de: string; para: string; dados: Buffer }[] = [];
+    for (const { de, para } of opcoes.mover ?? []) {
+      const dados = await lerDoDisco(de);
+      if (dados) movidos.push({ de, para, dados });
     }
-    for (const caminho of opcoes.apagar ?? []) {
-      if (arquivos.some((a) => a.caminho === caminho)) continue;
-      await rm(noDisco(caminho), { force: true });
+
+    const escrever = async (caminho: string, conteudo: Buffer | string) => {
+      await mkdir(path.dirname(noDisco(caminho)), { recursive: true });
+      await writeFile(noDisco(caminho), conteudo);
+    };
+    for (const arquivo of arquivos) await escrever(arquivo.caminho, arquivo.conteudo);
+    // Se o destino também foi gravado, vale o gravado (é uma imagem nova).
+    for (const m of movidos) if (!gravados.has(m.para)) await escrever(m.para, m.dados);
+
+    const chegaram = new Set([...gravados, ...movidos.map((m) => m.para)]);
+    const sair = [...movidos.map((m) => m.de), ...(opcoes.apagar ?? [])];
+    for (const caminho of new Set(sair)) {
+      if (!chegaram.has(caminho)) await rm(noDisco(caminho), { force: true });
     }
     console.info(`[admin local] ${mensagem}`);
     return { commitUrl: "" };
@@ -355,7 +401,8 @@ export async function salvarArquivos(
   const validados = arquivos.map((a) => ({ ...a, caminho: validarCaminho(a.caminho) }));
   const apagar = (opcoes.apagar ?? []).map(validarCaminho);
   const conferir = (opcoes.conferir ?? []).map((c) => ({ ...c, caminho: validarPasta(c.caminho) }));
-  return implementacao().salvarArquivos(validados, mensagem, { apagar, conferir });
+  const mover = (opcoes.mover ?? []).map((m) => ({ de: validarCaminho(m.de), para: validarCaminho(m.para) }));
+  return implementacao().salvarArquivos(validados, mensagem, { apagar, conferir, mover });
 }
 
 /**
