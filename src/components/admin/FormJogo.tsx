@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CARACTERISTICAS,
   gerarSlug,
@@ -23,9 +23,12 @@ import {
 } from "@/lib/admin/imagemNavegador";
 import { idDoCampo, validarJogo, type ErroCampo } from "@/lib/admin/validacaoJogo";
 import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
-import { ancoraDoJogo, contar } from "@/lib/formato";
+import { ancoraDoJogo } from "@/lib/formato";
 import { TEMAS } from "@/lib/temas";
 import { Campo } from "./Campo";
+import { Grupo } from "./Grupo";
+import { Linhas } from "./Linhas";
+import { juntarErros, ResumoErros } from "./ResumoErros";
 import { estilos } from "./estilos";
 
 type Props = {
@@ -75,11 +78,6 @@ function definir<T>(objeto: T, caminho: Caminho, valor: unknown): T {
   return copia as T;
 }
 
-function juntarErros(...listas: ErroCampo[][]): ErroCampo[] {
-  const vistos = new Set<string>();
-  return listas.flat().filter((erro) => !vistos.has(erro.id) && vistos.add(erro.id));
-}
-
 function lerRascunho(chave: string): Rascunho | null {
   try {
     const bruto = window.localStorage.getItem(chave);
@@ -87,15 +85,6 @@ function lerRascunho(chave: string): Rascunho | null {
   } catch {
     return null;
   }
-}
-
-function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
-  return (
-    <fieldset className={`${estilos.cartao} flex flex-col gap-5`}>
-      <legend className="float-left mb-1 w-full font-press text-base leading-snug text-vinho">{titulo}</legend>
-      {children}
-    </fieldset>
-  );
 }
 
 export function FormJogo(props: Props) {
@@ -114,7 +103,6 @@ export function FormJogo(props: Props) {
   const [errosServidor, setErrosServidor] = useState<ErroCampo[]>([]);
   const [status, setStatus] = useState("");
   const [rascunho, setRascunho] = useState<Rascunho | null>(null);
-  const [focar, setFocar] = useState<string | null>(null);
   const [desenhosNovos, setDesenhosNovos] = useState<Partial<Record<TipoDesenho, DesenhoNovo>>>({});
   const [errosDesenho, setErrosDesenho] = useState<Partial<Record<TipoDesenho, string>>>({});
   /** Prévia local dos desenhos já publicados nesta visita (o site só os mostra depois do deploy). */
@@ -174,13 +162,6 @@ export function FormJogo(props: Props) {
     window.addEventListener("beforeunload", avisar);
     return () => window.removeEventListener("beforeunload", avisar);
   }, [alterado]);
-
-  // Foco na linha nova das listas, depois que ela aparece na tela.
-  useEffect(() => {
-    if (!focar) return;
-    document.getElementById(focar)?.focus();
-    setFocar(null);
-  }, [focar]);
 
   function mudar(caminho: Caminho, valor: unknown) {
     setEntrada((atual) => definir(atual, caminho, valor));
@@ -395,25 +376,6 @@ export function FormJogo(props: Props) {
       mostrarErro(`Nenhum desenho foi enviado. ${falhas.join(" ")}`);
     }
     setEnviando(false);
-  }
-
-  // ─── Listas dinâmicas (controles e equipe) ───────────────────────────────────
-
-  function adicionarLinha(lista: "controles" | "equipe") {
-    const atual = entrada[lista];
-    const nova = lista === "controles" ? linhaControle() : linhaEquipe();
-    mudar([lista], [...atual, nova]);
-    setFocar(idDoCampo([lista, atual.length, lista === "controles" ? "acao" : "nome"]));
-    setStatus(`Linha ${atual.length + 1} adicionada.`);
-  }
-
-  function removerLinha(lista: "controles" | "equipe", indice: number) {
-    mudar(
-      [lista],
-      (entrada[lista] as unknown[]).filter((_, i) => i !== indice),
-    );
-    setFocar(`adicionar-${lista}`);
-    setStatus(`Linha ${indice + 1} removida.`);
   }
 
   // ─── Desenhos ────────────────────────────────────────────────────────────────
@@ -649,30 +611,7 @@ export function FormJogo(props: Props) {
         )}
       </div>
 
-      {erros.length > 0 && (
-        <div ref={resumo} tabIndex={-1} className={estilos.caixaErro}>
-          <h2 className="font-bold">
-            Corrija {contar(erros.length, "campo", "campos")} antes de publicar:
-          </h2>
-          <ul className="mt-2 list-disc pl-6">
-            {erros.map((erro) => (
-              <li key={erro.id}>
-                <a
-                  href={`#${erro.id}`}
-                  onClick={(evento) => {
-                    evento.preventDefault();
-                    const alvo = document.getElementById(erro.id);
-                    alvo?.focus();
-                    alvo?.scrollIntoView({ block: "center" });
-                  }}
-                >
-                  {erro.rotulo}: {erro.mensagem}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <ResumoErros erros={erros} ref={resumo} />
 
       <form
         noValidate
@@ -682,6 +621,8 @@ export function FormJogo(props: Props) {
         }}
         className="flex flex-col gap-6"
       >
+        {/* Travado durante o envio: nada digitado agora se perderia quando a resposta chegar. */}
+        <fieldset disabled={enviando} className="contents">
         <p className={estilos.ajuda}>
           Na mesma ordem da ficha dos alunos. Campo deixado em branco não impede a publicação: ele aparece como
           pendência no painel.
@@ -801,32 +742,27 @@ export function FormJogo(props: Props) {
         </Grupo>
 
         <Grupo titulo="Como se joga">
-          {entrada.controles.length === 0 && <p className={estilos.ajuda}>Nenhum controle cadastrado.</p>}
-          {entrada.controles.map((controle, i) => (
-            <fieldset key={i} className="flex flex-col gap-3 rounded-xl border-2 border-contorno p-4">
-              <legend className="px-1 font-bold">Controle {i + 1}</legend>
-              {texto(["controles", i, "acao"], "Ação", { ajuda: i === 0 ? "Ex.: Saltar, deslizar e desviar" : undefined })}
-              {texto(["controles", i, "teclas"], "Teclas", {
-                ajuda: "Separe por vírgula, ex.: W, A, S, D. Deixe vazio se a ação for automática.",
-              })}
-              <button
-                type="button"
-                onClick={() => removerLinha("controles", i)}
-                className={`${botao("ghost")} self-start`}
-              >
-                Remover linha {i + 1}
-                {controle.acao.trim() && `: ${controle.acao.trim()}`}
-              </button>
-            </fieldset>
-          ))}
-          <button
-            type="button"
-            id="adicionar-controles"
-            onClick={() => adicionarLinha("controles")}
-            className={`${botao("secondary")} self-start`}
+          <Linhas
+            itens={entrada.controles}
+            aoMudar={(itens) => mudar(["controles"], itens)}
+            novo={linhaControle}
+            nomeDaLinha="Controle"
+            descrever={(c) => c.acao}
+            idPrimeiroCampo={(i) => idDoCampo(["controles", i, "acao"])}
+            idAdicionar="adicionar-controles"
+            rotuloAdicionar="Adicionar linha de controle"
+            vazio="Nenhum controle cadastrado."
+            anunciar={setStatus}
           >
-            Adicionar linha de controle
-          </button>
+            {(_, i) => (
+              <>
+                {texto(["controles", i, "acao"], "Ação", { ajuda: i === 0 ? "Ex.: Saltar, deslizar e desviar" : undefined })}
+                {texto(["controles", i, "teclas"], "Teclas", {
+                  ajuda: "Separe por vírgula, ex.: W, A, S, D. Deixe vazio se a ação for automática.",
+                })}
+              </>
+            )}
+          </Linhas>
         </Grupo>
 
         <Grupo titulo="Bastidores">
@@ -836,30 +772,25 @@ export function FormJogo(props: Props) {
 
         <Grupo titulo="Equipe">
           <p className={estilos.ajuda}>Só o primeiro nome de cada estudante.</p>
-          {entrada.equipe.length === 0 && <p className={estilos.ajuda}>Ninguém na equipe ainda.</p>}
-          {entrada.equipe.map((pessoa, i) => (
-            <fieldset key={i} className="flex flex-col gap-3 rounded-xl border-2 border-contorno p-4">
-              <legend className="px-1 font-bold">Pessoa {i + 1}</legend>
-              {texto(["equipe", i, "nome"], "Primeiro nome", { extra: { autoComplete: "off" } })}
-              {texto(["equipe", i, "funcao"], "Função", { ajuda: i === 0 ? "Ex.: Programadora" : undefined })}
-              <button
-                type="button"
-                onClick={() => removerLinha("equipe", i)}
-                className={`${botao("ghost")} self-start`}
-              >
-                Remover linha {i + 1}
-                {pessoa.nome.trim() && `: ${pessoa.nome.trim()}`}
-              </button>
-            </fieldset>
-          ))}
-          <button
-            type="button"
-            id="adicionar-equipe"
-            onClick={() => adicionarLinha("equipe")}
-            className={`${botao("secondary")} self-start`}
+          <Linhas
+            itens={entrada.equipe}
+            aoMudar={(itens) => mudar(["equipe"], itens)}
+            novo={linhaEquipe}
+            nomeDaLinha="Pessoa"
+            descrever={(p) => p.nome}
+            idPrimeiroCampo={(i) => idDoCampo(["equipe", i, "nome"])}
+            idAdicionar="adicionar-equipe"
+            rotuloAdicionar="Adicionar linha na equipe"
+            vazio="Ninguém na equipe ainda."
+            anunciar={setStatus}
           >
-            Adicionar linha na equipe
-          </button>
+            {(_, i) => (
+              <>
+                {texto(["equipe", i, "nome"], "Primeiro nome", { extra: { autoComplete: "off" } })}
+                {texto(["equipe", i, "funcao"], "Função", { ajuda: i === 0 ? "Ex.: Programadora" : undefined })}
+              </>
+            )}
+          </Linhas>
         </Grupo>
 
         <Grupo titulo="Publicação">
@@ -884,6 +815,7 @@ export function FormJogo(props: Props) {
             </p>
           </div>
         </Grupo>
+        </fieldset>
 
         <div className="sticky bottom-0 z-1 flex flex-wrap items-center gap-3 border-t-[3px] border-tinta bg-papel-escuro py-4">
           <button type="button" onClick={salvarRascunho} disabled={desabilitar} className={botao("secondary")}>
