@@ -310,7 +310,9 @@ const githubRepo = {
 // ─── Modo local (ADMIN_MODO=local) ──────────────────────────────────────────────
 
 const RAIZ = process.cwd();
-const noDisco = (caminho: string) => path.join(RAIZ, ...caminho.split("/"));
+// O modo local só roda no computador de quem testa. Sem o turbopackIgnore, o build
+// da Vercel empacotaria o projeto inteiro (inclusive public/) junto da função.
+const noDisco = (caminho: string) => path.join(/*turbopackIgnore: true*/ RAIZ, ...caminho.split("/"));
 
 async function lerDoDisco(caminho: string): Promise<Buffer | null> {
   try {
