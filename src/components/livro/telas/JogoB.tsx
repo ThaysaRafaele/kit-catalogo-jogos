@@ -83,24 +83,12 @@ export function JogoBDireita({ s }: { s: TelaJogo }) {
       {(jogo.estudio || equipe.length > 0) && (
         <TeamCredits titulo="Equipe" subtitulo={jogo.estudio} linhas={equipe} />
       )}
-      <div className="flex flex-wrap items-center gap-[18px]">
-        {jogo.link && (
-          <a
-            href={jogo.link}
-            className={`${BASE_BOTAO} ${estiloBotao("primary")}`}
-          >
-            <span aria-hidden="true">▶</span>
-            Jogar<span className="sr-only"> {jogo.nome}</span>
-          </a>
-        )}
-        <div
-          role="img"
-          aria-label="Espaço para o QR code do jogo"
-          className="flex size-20 items-center justify-center rounded-md border-2 border-dashed border-tracejado text-center font-pixelify text-[15px] text-suave"
-        >
-          QR code
-        </div>
-      </div>
+      {jogo.link && (
+        <a href={jogo.link} className={`${BASE_BOTAO} ${estiloBotao("primary")} self-start`}>
+          <span aria-hidden="true">▶</span>
+          Jogar<span className="sr-only"> {jogo.nome}</span>
+        </a>
+      )}
     </div>
   );
 }

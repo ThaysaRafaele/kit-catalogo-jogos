@@ -6,7 +6,14 @@ Edição atual: **Mostra Cultural • LEVEL UP 2026**.
 
 O site é 100% estático e usa só serviços gratuitos. **Não há banco de dados:** todo o conteúdo fica em arquivos JSON neste repositório e é validado a cada build.
 
-> **Projeto em construção.** Hoje o site mostra só as primeiras telas do livro, em sequência, e os botões delas ainda não têm ação. As seções abaixo indicam o que ainda não existe.
+## Como o livro funciona
+
+- **Folhear:** os botões ◀ e ▶, as setas do teclado, ou um toque ou arraste na borda externa da página. Home volta para a capa.
+- **Ir direto a uma página:** o seletor "PÁG" abaixo do livro lista todas as páginas pelo nome.
+- **Endereço da página:** `/2026?p=12` abre na página 12, e `/2026#jogo-<slug>` abre no jogo.
+- **Tamanho:** duas páginas acima de 820 px de largura e uma no celular. Toda página tem a mesma altura, a da tela; o que não cabe rola dentro dela.
+- **Modo leitura:** todas as páginas em sequência, sem animação. Liga sozinho para quem pede menos movimento no sistema.
+- **Leitor de tela:** cada virada é anunciada ("Páginas 15 e 16 de 22: …"), e o foco não se perde ao folhear.
 
 ## Rodar no computador
 
@@ -45,7 +52,7 @@ referencia-design/                protótipo aprovado, a referência do visual
 
 - **Erro que interrompe o build:** JSON malformado, campo obrigatório ausente, edição sem título, jogo sem nome, turma ou mentor repetidos, desenho sem `alt`, `link` que não começa com `http` ou `https`, turma que não existe na edição, ou `slug` diferente do nome do arquivo.
 - **Aviso que não interrompe:** `PREENCHER` nos demais campos, lista vazia ou imagem que não existe. `PREENCHER` conta como vazio, então nos campos da regra anterior ele interrompe o build. Uma turma ou um item de lista sem nenhum conteúdo sai da lista. Esses itens não aparecem no site, e a imagem que falta vira um espaço reservado.
-- **Autorização de imagem:** o campo `autorizacaoImagem` de cada jogo existe para registrar se os nomes da equipe podem ser publicados. Só use `true` depois de confirmar os termos. *A regra que esconde os nomes quando o valor é `false` ainda será implementada.*
+- **Autorização de imagem:** com `autorizacaoImagem: false`, os nomes da equipe do jogo não são publicados, nem no código da página. Só use `true` depois de confirmar os termos.
 
 ## Adicionar um jogo
 
@@ -87,6 +94,11 @@ Confira sempre o resultado antes de publicar.
 
 Fotos originais em `.jpeg`, `.jpg` ou `.png` nessa pasta ficam fora do repositório.
 
+## Ícones e imagem de compartilhamento
+
+- O ícone da aba (`src/app/icon.png`) e o da tela inicial do celular (`src/app/apple-icon.png`) saem do logo do curso.
+- A imagem que aparece ao compartilhar o link (`src/app/opengraph-image.tsx`) é gerada no build, com o ano da edição mais recente. Ela usa as fontes de `src/app/fontes/` (licença OFL).
+
 ## Publicar na Vercel
 
 O plano gratuito (Hobby) basta. Ele é voltado a uso pessoal e não comercial, então vale conferir os [termos atuais](https://vercel.com/docs/plans/hobby) se o site passar a ser mantido oficialmente pela escola.
@@ -109,4 +121,4 @@ Se a validação do conteúdo encontrar um erro, a publicação falha e o site a
 
 O endereço padrão termina em `.vercel.app`. Para mudá-lo, ou para usar um domínio próprio, acesse **Settings → Domains**.
 
-**Defina o endereço final antes de imprimir qualquer material.** Os QR codes dos jogos vão apontar para ele, então trocá-lo depois invalida os impressos.
+**Defina o endereço final antes de imprimir qualquer material.** O QR code do catálogo aponta para ele, então trocá-lo depois invalida os impressos. A página inicial sempre abre a edição mais recente, então o mesmo QR code serve para os anos seguintes.

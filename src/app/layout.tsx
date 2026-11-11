@@ -19,10 +19,20 @@ const nunito = Nunito({
   variable: "--font-nunito-sans",
 });
 
+const DESCRICAO =
+  "Catálogo anual dos jogos criados pelos estudantes de Programação de Jogos Digitais do CEEP Hércules Maymone, em Campo Grande, MS.";
+
+// Na Vercel, o endereço do site entra sozinho como base das imagens de compartilhamento.
 export const metadata: Metadata = {
   title: { default: "Catálogo dos Jogos", template: "%s • Catálogo dos Jogos" },
-  description:
-    "Catálogo anual dos jogos criados pelos estudantes de Programação de Jogos Digitais do CEEP Hércules Maymone, em Campo Grande, MS.",
+  description: DESCRICAO,
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Catálogo dos Jogos • CEEP Hércules Maymone",
+    description: DESCRICAO,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
