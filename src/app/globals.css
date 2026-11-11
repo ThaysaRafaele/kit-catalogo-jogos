@@ -35,6 +35,9 @@
   --color-ouro: #ffe27a;
   --color-creme: #fff1cf;
   --color-noite: #1f1433;
+  /* Erros do admin: 7,4:1 sobre o papel. */
+  --color-erro: #9b1c10;
+  --color-erro-fundo: #fdecea;
 
   --shadow-bloco: 0 4px 0 var(--color-tinta);
   --shadow-bloco-baixo: 0 3px 0 var(--color-tinta);

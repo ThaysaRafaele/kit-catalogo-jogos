@@ -11,7 +11,8 @@
     "validar": "node scripts/validar-conteudo.ts",
     "prebuild": "npm run validar",
     "build": "next build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "admin:senha": "node scripts/admin-senha.ts"
   },
   "dependencies": {
     "next": "^16.4.5",
