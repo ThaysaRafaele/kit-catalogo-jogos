@@ -32,12 +32,19 @@ export const edicaoSchema = z.object({
   turmas: z
     .array(
       z.object({
-        id: z.string().min(1),
+        id: z.string().min(1, "toda turma precisa de nome"),
         lema: z.string().optional(),
         mentor: z.string().optional(),
       }),
     )
-    .refine((turmas) => new Set(turmas.map((t) => t.id)).size === turmas.length, "turma repetida"),
+    // O erro aponta para a turma repetida (turmas[i].id), e não para a lista inteira.
+    .superRefine((turmas, ctx) => {
+      turmas.forEach((turma, i) => {
+        if (turmas.findIndex((t) => t.id === turma.id) < i) {
+          ctx.addIssue({ code: "custom", path: [i, "id"], message: `turma "${turma.id}" repetida` });
+        }
+      });
+    }),
   creditos: linhas({ funcao: z.string(), nome: z.string() }),
 });
 

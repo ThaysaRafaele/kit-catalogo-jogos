@@ -12,7 +12,8 @@
     "prebuild": "npm run validar",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "admin:senha": "node scripts/admin-senha.ts"
+    "admin:senha": "node scripts/admin-senha.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "next": "^16.4.5",
@@ -27,6 +28,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "tailwindcss": "^4.3.5",
-    "typescript": "5.9"
+    "typescript": "5.9",
+    "vitest": "^3.2.7"
   }
 }
