@@ -11,7 +11,7 @@ export function Coracao({ largura, vazio = false, brilho = false }: Props) {
   return (
     <svg width={largura} height={(largura * 6) / 7} viewBox="0 0 7 6" shapeRendering="crispEdges" aria-hidden="true">
       <path
-        className={vazio ? "fill-terra" : "fill-coracao"}
+        className={vazio ? "fill-coracao-vazio" : "fill-coracao"}
         d="M1 0h2v1h1v-1h2v1h1v2h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-2h1z"
       />
       {brilho && !vazio && <path fill="#ffffff" d="M1 1h1v1h-1z" />}

@@ -1,8 +1,11 @@
+import { Bloco } from "@/components/Bloco";
 import { ControlsBlock } from "@/components/ControlsBlock";
 import { MolduraGaleria } from "@/components/DrawingFrame";
 import { TeamCredits } from "@/components/TeamCredits";
-import { juntar } from "@/lib/formato";
+import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { doisDigitos } from "@/lib/formato";
 import type { TelaJogo } from "@/lib/paginas";
+import { Marcador } from "./Cabecalho";
 import { CamposInfo } from "./CampoInfo";
 
 export function JogoBEsquerda({ s }: { s: TelaJogo }) {
@@ -10,34 +13,32 @@ export function JogoBEsquerda({ s }: { s: TelaJogo }) {
   const { mundo } = jogo;
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="font-pixelify text-[17px] font-medium wrap-anywhere text-vinho uppercase">
+    <div className="flex flex-col gap-5">
+      <Marcador>
         Fase {fase} • {jogo.nome}
-      </p>
-      <h2 className="font-press text-[22px] leading-[1.4] text-vinho uppercase">O mundo</h2>
+      </Marcador>
+      <h2 className="font-press text-xl leading-[1.6] wrap-anywhere text-vinho uppercase">
+        {mundo.lugar || "O mundo"}
+      </h2>
       <MolduraGaleria
         src={mundo.desenho.src}
         alt={mundo.desenho.alt}
         altura={290}
-        legenda={juntar(mundo.lugar, mundo.epoca)}
+        legenda={mundo.epoca}
       />
       {mundo.caracteristicas.length > 0 && (
-        <>
-          <h3 className="mt-1 font-pixelify text-xl font-medium">Características visuais</h3>
-          <ol className="flex flex-col gap-2">
+        <Bloco titulo="Características visuais">
+          <ol className="flex flex-col gap-2.5">
             {mundo.caracteristicas.map((caracteristica, i) => (
-              <li key={i} className="flex items-center gap-3 text-[17px]">
-                <span
-                  aria-hidden="true"
-                  className="flex size-8 flex-none items-center justify-center rounded-md border-[3px] border-tinta bg-laranja font-press text-xs text-tinta"
-                >
-                  {i + 1}
+              <li key={i} className="flex items-baseline gap-3.5 text-lg">
+                <span aria-hidden="true" className="flex-none font-press text-xs text-brasa">
+                  {doisDigitos(i + 1)}
                 </span>
                 {caracteristica}
               </li>
             ))}
           </ol>
-        </>
+        </Bloco>
       )}
       <CamposInfo
         campos={[
@@ -54,31 +55,30 @@ export function JogoBDireita({ s }: { s: TelaJogo }) {
   const { equipe } = jogo;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {jogo.controles.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h3 className="font-press text-base text-vinho uppercase">Como se joga</h3>
+        <div className="flex flex-col gap-3.5">
+          <h3 className="titulo-bloco">Como se joga</h3>
           <ControlsBlock controles={jogo.controles} />
         </div>
       )}
       {(jogo.desafio || jogo.solucao) && (
-        <div className="flex flex-col gap-2.5 rounded-xl border-4 border-tinta bg-papel-claro px-[18px] py-4">
-          <h3 className="font-press text-sm leading-[1.5] text-vinho uppercase">Bastidores • diário de dev</h3>
+        <Bloco titulo="Bastidores • Diário de dev">
           {jogo.desafio && (
             <>
-              <p className="font-pixelify text-base font-medium text-vinho uppercase">&gt; Log 01: maior desafio</p>
-              <p className="text-[17px] leading-[1.6]">{jogo.desafio}</p>
+              <p className="mt-1.5 font-pixelify text-[17px] font-medium text-tinta">&gt; Log 01: o maior desafio</p>
+              <p className="text-lg leading-[1.7]">{jogo.desafio}</p>
             </>
           )}
           {jogo.solucao && (
             <>
-              <p className="font-pixelify text-base font-medium text-[#2f6b2a] uppercase">
+              <p className="mt-1.5 font-pixelify text-[17px] font-medium text-[#2a5a26]">
                 &gt; Log 02: como resolvemos
               </p>
-              <p className="text-[17px] leading-[1.6]">{jogo.solucao}</p>
+              <p className="text-lg leading-[1.7]">{jogo.solucao}</p>
             </>
           )}
-        </div>
+        </Bloco>
       )}
       {(jogo.estudio || equipe.length > 0) && (
         <TeamCredits titulo="Equipe" subtitulo={jogo.estudio} linhas={equipe} />
@@ -87,7 +87,7 @@ export function JogoBDireita({ s }: { s: TelaJogo }) {
         {jogo.link && (
           <a
             href={jogo.link}
-            className="inline-flex min-h-11 items-center gap-2.5 rounded-[14px] border-4 border-tinta bg-laranja px-6 py-3.5 font-press text-base text-tinta uppercase shadow-bloco"
+            className={`${BASE_BOTAO} ${estiloBotao("primary")}`}
           >
             <span aria-hidden="true">▶</span>
             Jogar<span className="sr-only"> {jogo.nome}</span>
@@ -96,7 +96,7 @@ export function JogoBDireita({ s }: { s: TelaJogo }) {
         <div
           role="img"
           aria-label="Espaço para o QR code do jogo"
-          className="flex size-[88px] items-center justify-center rounded-lg border-4 border-dashed border-terra text-center font-pixelify text-[15px] text-madeira"
+          className="flex size-20 items-center justify-center rounded-md border-2 border-dashed border-tracejado text-center font-pixelify text-[15px] text-suave"
         >
           QR code
         </div>

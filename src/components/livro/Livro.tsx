@@ -19,9 +19,10 @@ export type DuplaPronta = {
 type Props = { ano: number; duplas: DuplaPronta[] };
 
 const CORACOES = 5;
-const MOLDURA = "relative rounded-lg bg-madeira p-2.5 shadow-[0_10px_0_var(--color-madeira-escura)]";
+const MOLDURA =
+  "relative rounded-md bg-moldura p-moldura shadow-[0_2px_0_var(--color-moldura-escura),0_30px_50px_-20px_rgba(25,60,90,0.55),0_10px_22px_-10px_rgba(25,60,90,0.35)]";
 const LOMBADA =
-  "pointer-events-none absolute top-2.5 bottom-2.5 left-1/2 z-2 -ml-12 w-24 bg-[linear-gradient(to_right,rgba(59,31,18,0)_0%,rgba(59,31,18,0.10)_30%,rgba(59,31,18,0.38)_47%,rgba(30,14,6,0.55)_50%,rgba(59,31,18,0.38)_53%,rgba(59,31,18,0.10)_70%,rgba(59,31,18,0)_100%)]";
+  "pointer-events-none absolute inset-y-moldura left-1/2 z-2 -ml-[60px] w-[120px] bg-[linear-gradient(to_right,rgba(74,42,24,0)_0%,rgba(74,42,24,0.06)_30%,rgba(74,42,24,0.22)_46%,rgba(40,20,8,0.42)_50%,rgba(74,42,24,0.22)_54%,rgba(74,42,24,0.06)_70%,rgba(74,42,24,0)_100%)]";
 
 function campoDeTexto(alvo: EventTarget | null) {
   return alvo instanceof HTMLElement && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName));
@@ -43,7 +44,7 @@ type PropsBorda = {
 
 /**
  * Borda externa da página, na altura inteira: um toque vira a página e arrastar dobra o
- * canto. Decorativa para leitores de tela: os botões Voltar e Continue fazem o mesmo.
+ * canto. Decorativa para leitores de tela: os botões ◀ e ▶ fazem o mesmo.
  */
 function Borda({ dir, ativo, aoPressionar, aoArrastar, aoSoltar, aoCancelar }: PropsBorda) {
   const voltar = dir === "prev";
@@ -63,9 +64,9 @@ function Borda({ dir, ativo, aoPressionar, aoArrastar, aoSoltar, aoCancelar }: P
           ?.scrollBy({ top: e.deltaY })
       }
       // pan-y: um gesto vertical que começa na borda rola a página em vez de virar.
-      // A da direita deixa livre a barra de rolagem da página (12px na borda).
-      className={`group absolute top-2.5 bottom-2.5 z-6 w-6 cursor-pointer touch-pan-y select-none from-[rgba(30,14,6,0.10)] to-transparent min-[821px]:w-10 ${
-        voltar ? "left-2.5 hover:bg-linear-to-r" : "right-[22px] hover:bg-linear-to-l"
+      // A da direita deixa livre a barra de rolagem da página (--spacing-barra).
+      className={`group absolute inset-y-moldura z-6 w-6 cursor-pointer touch-pan-y select-none from-[rgba(30,14,6,0.10)] to-transparent min-[821px]:w-10 ${
+        voltar ? "left-moldura hover:bg-linear-to-r" : "right-[calc(var(--spacing-moldura)+var(--spacing-barra))] hover:bg-linear-to-l"
       }`}
       style={{ pointerEvents: ativo ? "auto" : "none" }}
     >
@@ -139,11 +140,11 @@ function IrParaPagina({ opcoes, atual, total, aoIr }: PropsIrPara) {
   const curto = opcoes.find((opcao) => opcao.valor === valor)?.curto;
 
   return (
-    <div className="relative flex items-center gap-2 rounded-full border-4 border-tinta bg-papel px-4 py-2.5 font-pixelify text-lg font-medium has-[:focus-visible]:outline-4 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-[#0b2d8f] has-[:focus-visible]:outline-solid">
+    <div className="relative flex min-w-[120px] items-center justify-center gap-2 rounded-lg px-3 py-2 font-pixelify text-lg font-medium text-tinta hover:bg-papel-claro/60 has-[:focus-visible]:outline-4 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-[#0b2d8f] has-[:focus-visible]:outline-solid">
       <span aria-hidden="true">
         PÁG {curto} / {total}
       </span>
-      <span aria-hidden="true" className="text-sm text-vinho">
+      <span aria-hidden="true" className="text-xs text-ferrugem">
         ▼
       </span>
       <select
@@ -173,8 +174,8 @@ export function Livro({ ano, duplas }: Props) {
   const { p, k, total, estreito, leitura, animando, cena, refs } = livro;
   /**
    * Para onde vai o foco depois da virada. "livro": quem usou um botão ou link de dentro
-   * da página o perde, e o foco vai para o livro. "seSumir": Voltar, Continue e as setas
-   * mantêm o foco onde está, a não ser que ele se perca (o Continue desabilitado no fim).
+   * da página o perde, e o foco vai para o livro. "seSumir": ◀, ▶ e as setas
+   * mantêm o foco onde está, a não ser que ele se perca (o ▶ desabilitado no fim).
    */
   const foco = useRef<"livro" | "seSumir" | null>(null);
 
@@ -194,7 +195,7 @@ export function Livro({ ano, duplas }: Props) {
     return virou;
   }
 
-  // Tocar ou arrastar a borda segue a mesma regra de foco de Voltar e Continue.
+  // Tocar ou arrastar a borda segue a mesma regra de foco de ◀ e ▶.
   const borda = {
     ...livro.borda,
     aoPressionar: (dir: "next" | "prev", e: PointerEvent<HTMLElement>) => {
@@ -296,19 +297,21 @@ export function Livro({ ano, duplas }: Props) {
       </a>
       <header className="relative z-2 mx-auto flex w-full flex-none max-w-[1240px] flex-wrap items-center justify-between gap-3.5 px-4 pt-[18px] pb-3">
         <div className="flex flex-wrap items-center gap-4">
+          <p className="font-press text-[13px] tracking-[0.06em] text-tinta">
+            LEVEL UP <span className="text-ferrugem">{ano}</span>
+          </p>
           {/* No modo leitura a página não muda, então os corações não diriam o progresso real. */}
           {!leitura && (
-            <div role="img" aria-label={`Progresso de leitura: ${cheios} de ${CORACOES} corações`} className="flex gap-1.5">
+            <div role="img" aria-label={`Progresso de leitura: ${cheios} de ${CORACOES} corações`} className="flex gap-1">
               {Array.from({ length: CORACOES }, (_, i) => (
-                <Coracao key={i} largura={35} vazio={i >= cheios} brilho />
+                <Coracao key={i} largura={21} vazio={i >= cheios} brilho />
               ))}
             </div>
           )}
-          <p className="font-press text-sm text-vinho">LEVEL UP {ano}</p>
         </div>
         {/* Sem "disabled" durante a virada: o livro já ignora o clique, e o foco não se perde. */}
         <nav aria-label="Atalhos do livro" className="flex flex-wrap gap-3">
-          <PixelButton label="Sumário" variant="small" onPress={() => irPara(indiceDe("toc"))} />
+          <PixelButton label="Sumário" variant="ghost" onPress={() => irPara(indiceDe("toc"))} />
           <PixelButton label="Modo leitura" variant="toggle" pressed={leitura} onPress={livro.alternarLeitura} />
         </nav>
       </header>
@@ -317,11 +320,11 @@ export function Livro({ ano, duplas }: Props) {
         <p className="sr-only" aria-live="polite">
           {aviso}
         </p>
-        <div className={`mx-auto w-full max-w-[1240px] ${leitura ? "" : "flex min-h-0 flex-1 flex-col"}`}>
+        <div className={`mx-auto w-full max-w-[1180px] ${leitura ? "" : "flex min-h-0 flex-1 flex-col"}`}>
           {leitura ? (
             <div className="reading" onClick={aoClicar}>
               {duplas.map((dupla, idx) => (
-                <section key={idx} id={idDaDupla(dupla, idx)} aria-label={dupla.label} tabIndex={-1} className={`mb-9 ${MOLDURA}`}>
+                <section key={idx} id={idDaDupla(dupla, idx)} aria-label={dupla.label} tabIndex={-1} className={`mb-10 ${MOLDURA}`}>
                   <div className="spread">
                     <div className="min-w-0 bg-papel">{dupla.L}</div>
                     <div className="min-w-0 bg-papel">{dupla.R}</div>
@@ -352,7 +355,7 @@ export function Livro({ ano, duplas }: Props) {
                     </div>
                     <div
                       aria-hidden="true"
-                      className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 z-2 w-7 bg-[linear-gradient(to_right,rgba(30,14,6,0.40),rgba(59,31,18,0.12)_50%,rgba(59,31,18,0))]"
+                      className="pointer-events-none absolute inset-y-moldura left-moldura z-2 w-7 bg-[linear-gradient(to_right,rgba(30,14,6,0.40),rgba(59,31,18,0.12)_50%,rgba(59,31,18,0))]"
                     />
                   </>
                 ) : (
@@ -374,7 +377,7 @@ export function Livro({ ano, duplas }: Props) {
                   <div
                     aria-hidden="true"
                     inert
-                    className="pointer-events-none absolute top-2.5 bottom-2.5 z-4"
+                    className="pointer-events-none absolute inset-y-moldura z-4 will-change-transform"
                     style={{ left: folha.left, width: folha.width }}
                   >
                     {/* Sombra que a dobra projeta na página de baixo. */}
@@ -404,11 +407,11 @@ export function Livro({ ano, duplas }: Props) {
 
               <nav
                 aria-label="Folhear páginas"
-                className={`flex flex-none flex-wrap items-center justify-center pb-3 ${estreito ? "gap-3" : "gap-[18px]"}`}>
+                className={`flex flex-none flex-wrap items-center justify-center pb-3 ${estreito ? "gap-3" : "gap-[22px]"}`}>
                 <PixelButton
-                  label={estreito ? "◀" : "◀ Voltar"}
-                  variant={estreito ? "small" : "primary"}
-                  ariaLabel="Voltar"
+                  label="◀"
+                  variant="icon"
+                  ariaLabel="Página anterior"
                   disabled={livro.noInicio}
                   onPress={() => folhear(livro.anterior())}
                 />
@@ -419,9 +422,9 @@ export function Livro({ ano, duplas }: Props) {
                   aoIr={(q) => folhear(livro.flipTo(q))}
                 />
                 <PixelButton
-                  label={estreito ? "▶" : "Continue ▶"}
-                  variant={estreito ? "small" : "primary"}
-                  ariaLabel="Continue"
+                  label="▶"
+                  variant="icon"
+                  ariaLabel="Próxima página"
                   disabled={livro.noFim}
                   onPress={() => folhear(livro.proxima())}
                 />

@@ -2,12 +2,11 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from "react";
 
-const DURACAO = 700;
-/** Espaço entre a moldura do livro e o papel. */
-const MARGEM = 10;
-const BORDA = `${MARGEM}px`;
-const METADE = `calc(50% - ${MARGEM}px)`;
-const INTEIRA = `calc(100% - ${2 * MARGEM}px)`;
+const DURACAO = 800;
+/** Espaço entre a moldura do livro e o papel, definido em globals.css (--spacing-moldura). */
+const BORDA = "var(--spacing-moldura)";
+const METADE = "calc(50% - var(--spacing-moldura))";
+const INTEIRA = "calc(100% - 2 * var(--spacing-moldura))";
 /** Abaixo disto, o livro mostra uma página por vez e vira pela borda esquerda (o mesmo de globals.css). */
 const CONSULTA_ESTREITA = "(max-width: 820px)";
 
@@ -234,8 +233,9 @@ export function useBookFlip(ancoras: (string | undefined)[]) {
     const { anim: a, estreito } = atual.current;
     const r = palco.current?.getBoundingClientRect();
     if (!a || !r) return false;
-    const W = estreito ? r.width - 2 * MARGEM : (r.width - 2 * MARGEM) / 2;
-    const H = r.height - 2 * MARGEM;
+    const margem = parseFloat(getComputedStyle(palco.current!).paddingLeft) || 0;
+    const W = estreito ? r.width - 2 * margem : (r.width - 2 * margem) / 2;
+    const H = r.height - 2 * margem;
     if (W < 40 || H < 40) return false;
     // Na dupla, voltar levanta o canto esquerdo; nos outros casos, o direito.
     const esquerda = !estreito && a.dir === "prev";

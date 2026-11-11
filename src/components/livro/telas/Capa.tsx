@@ -4,41 +4,38 @@ import type { ContextoLivro } from "@/lib/paginas";
 
 export function CapaEsquerda({ ctx }: { ctx: ContextoLivro }) {
   return (
-    <div className="tela-centro gap-5">
-      <div className="flex flex-wrap items-center justify-center gap-3.5">
-        <LogoEscola tamanho={140} />
-        <LogoCurso tamanho={136} />
+    <div className="tela-centro justify-between gap-8">
+      <div className="flex flex-wrap items-center justify-center gap-[18px]">
+        <LogoEscola tamanho={92} />
+        <LogoCurso tamanho={116} />
       </div>
-      <p className="font-pixelify text-[17px] font-medium tracking-[1px] text-vinho uppercase">
-        Mostra Cultural • CEEP Hércules Maymone
-      </p>
-      <h1 className="font-press text-[52px] leading-[1.3] text-vinho uppercase [text-shadow:5px_5px_0_var(--color-laranja-claro)]">
-        Level <br />
-        Up
-      </h1>
-      <p className="rounded-[10px] border-4 border-tinta bg-laranja px-5 py-3 font-press text-2xl text-tinta shadow-bloco">
-        {ctx.edicao.ano}
-      </p>
-      <p className="mt-1.5 font-pixelify text-[30px] font-medium text-madeira">Catálogo dos Jogos</p>
-      <p className="max-w-[360px] text-lg">Curso de Programação de Jogos Digitais • Campo Grande, MS</p>
+      <div className="flex flex-col items-center gap-5">
+        <p className="titulo-bloco tracking-[0.18em]">Mostra Cultural</p>
+        <h1 className="font-press text-[56px] leading-[1.25] text-vinho uppercase [text-shadow:4px_4px_0_var(--color-laranja-claro)]">
+          Level <br />
+          Up
+        </h1>
+        <p className="font-press text-lg tracking-[0.2em] text-tinta">{ctx.edicao.ano}</p>
+      </div>
+      <div className="flex flex-col items-center gap-1.5">
+        <p className="font-pixelify text-[28px] font-medium text-tinta">Catálogo dos Jogos</p>
+        <p className="text-[17px] text-suave">Programação de Jogos Digitais • CEEP Hércules Maymone</p>
+      </div>
     </div>
   );
 }
 
-export function CapaDireita({ ctx }: { ctx: ContextoLivro }) {
+export function CapaDireita() {
   return (
-    <div className="tela-centro gap-[26px]">
-      <p className="blink font-press text-[22px] text-vinho uppercase">Press start</p>
-      <nav aria-label="Menu inicial" className="flex flex-col items-center gap-5">
+    <div className="tela-centro gap-[34px]">
+      <p className="blink font-press text-lg tracking-[0.08em] text-vinho uppercase">Press start</p>
+      <nav aria-label="Menu inicial" className="flex w-full max-w-[280px] flex-col gap-3.5">
         <PixelButton label="Let's play" destino="save" />
-        <PixelButton label="Menu" destino="toc" />
+        <PixelButton label="Menu" variant="secondary" destino="toc" />
         <PixelButton label="Continue" variant="secondary" destino="intro" />
       </nav>
-      <p className="mt-[18px] text-base leading-[1.6]">
-        Use os botões Voltar e Continue, ou arraste o canto da página para folhear.
-      </p>
-      <p className="font-pixelify text-base text-madeira">
-        © {ctx.edicao.ano} CEEP Hércules Maymone • Campo Grande, MS
+      <p className="max-w-[30ch] text-base leading-[1.6] text-suave">
+        Use as setas, os botões ou a borda da página para folhear.
       </p>
     </div>
   );

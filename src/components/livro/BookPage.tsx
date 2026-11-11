@@ -19,11 +19,12 @@ function Rodape({ numero, direita }: { numero: number; direita: boolean }) {
   return (
     <div
       aria-hidden="true"
-      className={`flex flex-none items-center gap-2 px-6 pt-2 pb-5 ${direita ? "flex-row-reverse" : ""}`}
+      className={`flex flex-none items-center gap-2.5 px-8 pt-2 pb-[26px] ${direita ? "flex-row-reverse" : ""}`}
     >
       <img src={LOGO_ESCOLA.rodape} alt="" className="block size-6 object-contain" />
       <img src={LOGO_CURSO.rodape} alt="" className="block size-6 object-contain" />
-      <span className="font-press text-xs text-[#5a3a2c]">{doisDigitos(numero)}</span>
+      <span className="h-0.5 w-[18px] bg-contorno" />
+      <span className="font-pixelify text-base font-medium text-suave">{doisDigitos(numero)}</span>
     </div>
   );
 }
@@ -32,7 +33,7 @@ function Rodape({ numero, direita }: { numero: number; direita: boolean }) {
 function Conteudo({ s, side, ctx }: Props): ReactElement {
   switch (s.kind) {
     case "cover":
-      return side === "L" ? <CapaEsquerda ctx={ctx} /> : <CapaDireita ctx={ctx} />;
+      return side === "L" ? <CapaEsquerda ctx={ctx} /> : <CapaDireita />;
     case "save":
       return side === "L" ? <SaveEsquerda /> : <SaveDireita ctx={ctx} />;
     case "intro":

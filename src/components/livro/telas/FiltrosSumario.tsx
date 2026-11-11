@@ -3,9 +3,10 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { PixelButton } from "@/components/PixelButton";
 import type { Tema } from "@/lib/esquema";
-import { ancoraDoJogo, contar } from "@/lib/formato";
+import { contar } from "@/lib/formato";
 import type { Fase } from "@/lib/paginas";
 import { TEMAS } from "@/lib/temas";
+import { ListaFases } from "./ListaFases";
 
 type Filtros = {
   turma: string | null;
@@ -47,10 +48,10 @@ type PropsGrupo<T> = {
 function GrupoFiltro<T>({ nome, opcoes, valor, onChange }: PropsGrupo<T>) {
   return (
     <div role="group" aria-label={`Filtrar por ${nome.toLowerCase()}`} className="flex flex-col gap-2.5">
-      <p aria-hidden="true" className="font-pixelify text-lg font-medium">
+      <p aria-hidden="true" className="titulo-bloco text-suave">
         {nome}
       </p>
-      <div className="flex flex-wrap gap-2.5">
+      <div className="flex flex-wrap gap-2">
         {opcoes.map((opcao) => (
           <PixelButton
             key={String(opcao.valor ?? "")}
@@ -93,7 +94,7 @@ export function FiltrosFases() {
         valor={tema}
         onChange={setTema}
       />
-      <p aria-live="polite" className="mt-1.5 text-[17px] font-bold">
+      <p aria-live="polite" className="mt-1 text-[17px] text-suave">
         {contar(visiveis.length, "fase encontrada", "fases encontradas")}
       </p>
     </>
@@ -105,7 +106,7 @@ export function MapaDeFases() {
 
   if (visiveis.length === 0) {
     return (
-      <p className="rounded-[10px] border-[3px] border-dashed border-terra bg-papel-escuro p-3.5 text-[17px]">
+      <p className="text-lg text-suave">
         {fases.length === 0
           ? "Esta edição ainda não tem fases."
           : "Nenhuma fase com esse filtro. Tente outra turma ou outro tema."}
@@ -114,28 +115,11 @@ export function MapaDeFases() {
   }
 
   return (
-    <ol className="flex flex-col gap-3.5">
-      {visiveis.map((f) => (
-        <li key={f.slug}>
-          <a
-            href={`#${ancoraDoJogo(f.slug)}`}
-            className="cartao-fase flex items-center gap-3.5 p-3.5"
-          >
-            <span
-              aria-hidden="true"
-              className="flex size-16 flex-none items-center justify-center rounded-full border-4 border-tinta bg-grama font-press text-xs text-[#12300a]"
-            >
-              {f.fase}
-            </span>
-            <span className="flex min-w-0 flex-col gap-1.5">
-              <span className="text-lg font-extrabold">{f.nome}</span>
-              <span className="text-base">
-                Fase {f.fase} • Turma {f.turma} • {TEMAS[f.tema].nome}
-              </span>
-            </span>
-          </a>
-        </li>
-      ))}
-    </ol>
+    <ListaFases
+      itens={visiveis.map((f) => ({
+        ...f,
+        detalhe: `Fase ${f.fase} • Turma ${f.turma} • ${TEMAS[f.tema].nome}`,
+      }))}
+    />
   );
 }

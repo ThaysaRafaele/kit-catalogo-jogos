@@ -1,20 +1,20 @@
+import { Bloco } from "@/components/Bloco";
 import { Estrela } from "@/components/Estrela";
 import type { Mentor } from "@/lib/esquema";
 
 function ListaMarcada({ titulo, itens }: { titulo: string; itens: string[] }) {
   if (itens.length === 0) return null;
   return (
-    <div>
-      <p className="rotulo mb-1.5">{titulo}</p>
+    <Bloco titulo={titulo} compacto>
       <ul className="flex flex-col gap-1.5">
         {itens.map((item) => (
           <li key={item} className="flex items-center gap-2.5 text-base">
-            <span aria-hidden="true" className="size-2.5 flex-none border-2 border-tinta bg-laranja" />
+            <span aria-hidden="true" className="size-2 flex-none bg-laranja" />
             {item}
           </li>
         ))}
       </ul>
-    </div>
+    </Bloco>
   );
 }
 
@@ -22,28 +22,23 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
   const { nome, foto, lider, classe, skills, specialAbility, sideQuests, funFact, disciplinas } = mentor;
 
   return (
-    <article className="ficha w-full">
+    <article className="w-full overflow-hidden rounded-xl border-2 border-tinta bg-papel-claro">
       {lider && (
-        <p className="border-b-4 border-tinta bg-[#f2c230] px-3.5 py-2.5 text-center font-press text-[13px] tracking-[1px] text-tinta uppercase">
+        <p className="border-b-2 border-tinta bg-[#f2c230] px-3.5 py-2 text-center font-press text-[11px] tracking-[0.08em] text-tinta uppercase">
           <span aria-hidden="true">★ </span>
           Líder do clã
           <span aria-hidden="true"> ★</span>
         </p>
       )}
-      <div className="flex flex-col gap-3.5 p-4">
-        <div className="flex flex-wrap items-center gap-3.5">
-          <div className="flex size-24 flex-none items-end justify-center overflow-hidden rounded-[10px] border-4 border-tinta bg-ceu">
+      <div className="flex flex-col p-[18px]">
+        <div className="flex flex-wrap items-center gap-4 pb-3.5">
+          <div className="flex size-[84px] flex-none items-end justify-center overflow-hidden rounded-lg border-2 border-tinta bg-ceu">
             {foto ? (
-              <img
-                src={foto}
-                alt={`Foto de ${nome}`}
-                loading="lazy"
-                className="size-full object-cover"
-              />
+              <img src={foto} alt={`Foto de ${nome}`} loading="lazy" className="size-full object-cover" />
             ) : (
               <svg
-                width="80"
-                height="80"
+                width="72"
+                height="72"
                 viewBox="0 0 10 10"
                 shapeRendering="crispEdges"
                 role="img"
@@ -56,56 +51,47 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
               </svg>
             )}
           </div>
-          <div className="flex min-w-[150px] flex-1 flex-col gap-2">
+          <div className="flex min-w-[150px] flex-1 flex-col gap-1.5">
             <h3 className="font-pixelify text-[22px] leading-[1.2] font-medium text-tinta">{nome}</h3>
             {classe && (
-              <p className="inline-flex flex-wrap gap-x-1.5 self-start rounded-md bg-madeira px-2.5 py-[5px] font-pixelify text-[15px] font-medium wrap-anywhere text-papel">
-                <span className="text-laranja-claro uppercase">
-                  Classe<span className="sr-only">: </span>
+              <p className="text-base wrap-anywhere">
+                <span className="rotulo">
+                  Classe<span className="sr-only">:</span>{" "}
                 </span>
-                <span className="min-w-0">{classe}</span>
+                {classe}
               </p>
             )}
           </div>
         </div>
 
         {skills.length > 0 && (
-          <div>
-            <p className="rotulo mb-2">Skills</p>
-            <ul className="flex flex-wrap gap-2">
+          <Bloco titulo="Skills" compacto>
+            <ul className="flex flex-wrap gap-1.5">
               {skills.map((skill) => (
-                <li
-                  key={skill}
-                  className="rounded-[20px] border-[3px] border-tinta bg-papel-claro px-3 py-1 text-base font-bold"
-                >
+                <li key={skill} className="rounded-[20px] border-2 border-contorno px-3 py-[3px] text-base font-bold">
                   {skill}
                 </li>
               ))}
             </ul>
-          </div>
+          </Bloco>
         )}
 
         {specialAbility && (
-          <div className="flex items-start gap-2.5 rounded-[10px] bg-floresta px-3.5 py-3 text-white">
-            <Estrela tamanho={24} className="mt-0.5 flex-none" />
-            <div>
-              <p className="font-pixelify text-[15px] font-medium text-ouro uppercase">Special ability</p>
-              <p className="mt-1 text-base leading-[1.5]">{specialAbility}</p>
-            </div>
-          </div>
+          <Bloco titulo="Special ability" compacto>
+            <p className="flex items-start gap-2.5 text-base leading-[1.5]">
+              <Estrela tamanho={20} className="mt-0.5 flex-none" />
+              {specialAbility}
+            </p>
+          </Bloco>
         )}
 
         <ListaMarcada titulo="Side quests" itens={sideQuests} />
         <ListaMarcada titulo="Disciplinas" itens={disciplinas} />
 
         {funFact && (
-          <div className="rounded-[10px] border-[3px] border-dashed border-terra bg-creme px-3.5 py-2.5">
-            <p className="rotulo">
-              <span aria-hidden="true">? </span>
-              Fun fact
-            </p>
-            <p className="mt-1 text-base leading-[1.5]">{funFact}</p>
-          </div>
+          <Bloco titulo="Fun fact" compacto>
+            <p className="text-base leading-[1.5] italic">{funFact}</p>
+          </Bloco>
         )}
       </div>
     </article>

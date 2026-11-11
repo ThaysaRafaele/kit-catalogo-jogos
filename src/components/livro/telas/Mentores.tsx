@@ -5,11 +5,11 @@ import { Cabecalho } from "./Cabecalho";
 
 export function MentoresAbertura({ mentores }: { mentores: Mentor[] }) {
   return (
-    <div className="flex flex-col gap-[18px]">
-      <Cabecalho rotulo="Selecione seu guia" className="text-[22px]/[1.5]">
+    <div className="flex flex-col gap-[22px]">
+      <Cabecalho rotulo="Selecione seu guia" className="text-xl/[1.7]">
         Seu time de mentores
       </Cabecalho>
-      <p className="text-lg leading-[1.6]">
+      <p className="text-[19px] leading-[1.7]">
         Toda party precisa de guias. Conheça quem acompanhou os estúdios nesta jornada.
       </p>
       {mentores.map((mentor) => (

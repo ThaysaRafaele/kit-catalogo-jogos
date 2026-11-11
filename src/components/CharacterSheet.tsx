@@ -17,32 +17,34 @@ export function CharacterSheet({ tipo, nome, desenho, campos }: Props) {
   const preenchidos = campos.filter((campo) => campo.texto);
 
   return (
-    <article className="ficha min-w-0">
+    <article className="flex min-w-0 flex-col gap-3">
       <p
-        className="flex flex-wrap items-center gap-2 px-3.5 py-2.5 font-pixelify text-base font-medium tracking-[1px] text-white uppercase"
-        style={{ background: cor }}
+        className="titulo-bloco flex flex-wrap items-center gap-2.5"
+        style={{ color: cor }}
       >
-        <span aria-hidden="true" className="rounded bg-white px-1.5 py-1 font-press text-xs" style={{ color: cor }}>
+        <span
+          aria-hidden="true"
+          className="rounded px-[7px] py-[5px] font-press text-[11px] tracking-normal text-white"
+          style={{ background: cor }}
+        >
           {marca}
         </span>
         {papel}
       </p>
-      <div className="flex flex-col gap-3 p-3.5">
-        <MolduraCarta src={desenho.src} alt={desenho.alt} altura={220} accent={cor} />
-        {nome && (
-          <h4 className="font-pixelify text-2xl leading-[1.2] font-medium wrap-anywhere text-tinta">{nome}</h4>
-        )}
-        {preenchidos.length > 0 && (
-          <dl className="flex flex-col gap-2.5">
-            {preenchidos.map((campo) => (
-              <div key={campo.rotulo} className="border-t-[3px] border-dotted border-[#b89a6a] pt-2">
-                <dt className="rotulo">{campo.rotulo}</dt>
-                <dd className="mt-1 text-base leading-[1.55] wrap-anywhere">{campo.texto}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </div>
+      <MolduraCarta src={desenho.src} alt={desenho.alt} altura={220} accent={cor} />
+      {nome && (
+        <h4 className="mt-1 font-pixelify text-2xl leading-[1.2] font-medium wrap-anywhere text-tinta">{nome}</h4>
+      )}
+      {preenchidos.length > 0 && (
+        <dl className="flex flex-col">
+          {preenchidos.map((campo) => (
+            <div key={campo.rotulo} className="divisoria py-2.5">
+              <dt className="rotulo">{campo.rotulo}</dt>
+              <dd className="mt-1 text-base leading-[1.55] wrap-anywhere">{campo.texto}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
     </article>
   );
 }

@@ -6,18 +6,18 @@ import type { ContextoLivro } from "@/lib/paginas";
 
 export function CreditosEsquerda({ ctx }: { ctx: ContextoLivro }) {
   return (
-    <div className="tela-centro gap-6">
-      <h2 className="font-press text-[30px] leading-[1.5] text-vinho uppercase">
+    <div className="tela-centro gap-7">
+      <div className="flex gap-2">
+        <Coracao largura={35} />
+        <Coracao largura={35} />
+        <Coracao largura={35} />
+      </div>
+      <h2 className="font-press text-[28px] leading-[1.6] text-vinho uppercase">
         Thanks <br />
         for <br />
         playing
       </h2>
-      <div className="flex gap-2">
-        <Coracao largura={42} />
-        <Coracao largura={42} />
-        <Coracao largura={42} />
-      </div>
-      <p className="max-w-[420px] text-lg leading-[1.65]">
+      <p className="max-w-[34ch] text-[19px] leading-[1.75]">
         Obrigado a cada estudante que desenhou, programou, testou e apresentou. {ctx.edicao.agradecimento}
       </p>
     </div>
@@ -30,25 +30,22 @@ export function CreditosDireita({ ctx }: { ctx: ContextoLivro }) {
   const linhas = turmas ? [...edicao.creditos, { funcao: "Turmas", nome: turmas }] : edicao.creditos;
 
   return (
-    <div className="tela-centro gap-[22px]">
-      <p
-        aria-hidden="true"
-        className="font-press text-5xl text-vinho [text-shadow:5px_5px_0_var(--color-laranja-claro)]"
-      >
+    <div className="tela-centro gap-6">
+      <p aria-hidden="true" className="font-press text-[40px] text-vinho [text-shadow:4px_4px_0_var(--color-laranja-claro)]">
         END
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-4">
-        <LogoEscola tamanho={140} />
-        <LogoCurso tamanho={164} />
+      <div className="flex flex-wrap items-center justify-center gap-[18px]">
+        <LogoEscola tamanho={120} />
+        <LogoCurso tamanho={150} />
       </div>
-      <p className="max-w-[440px] font-pixelify text-[21px] leading-[1.35] font-medium text-tinta">
+      <p className="max-w-[30ch] font-pixelify text-[21px] leading-[1.4] font-medium text-tinta">
         Centro Estadual de Educação Profissional Hércules Maymone
       </p>
-      <div className="w-full max-w-[420px]">
+      <div className="w-full max-w-[400px]">
         <TeamCredits titulo="Créditos da Mostra" subtitulo={`LEVEL UP ${edicao.ano}`} linhas={linhas} />
       </div>
-      <PixelButton label="Jogar de novo" destino="cover" />
-      <p className="text-base">Próximo save: LEVEL UP {edicao.ano + 1}</p>
+      <PixelButton label="Jogar de novo" variant="secondary" destino="cover" />
+      <p className="text-base text-suave">Próximo save: LEVEL UP {edicao.ano + 1}</p>
     </div>
   );
 }
