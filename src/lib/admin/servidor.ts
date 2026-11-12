@@ -7,7 +7,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { CaminhoInvalidoError } from "./caminhos.ts";
 import { origemValida } from "./origem.ts";
 import { ConflitoError, RepositorioError } from "./repositorio.ts";
-import { COOKIE_SESSAO, verificarSessao, type Sessao } from "./sessao.ts";
+import { COOKIE_SESSAO, type Sessao } from "./sessao.ts";
+import { sessaoValida } from "./usuarios.ts";
 
 export { origemValida };
 
@@ -32,11 +33,11 @@ export function exigirSessao(req: NextRequest): Sessao | NextResponse {
   if (req.method !== "GET" && req.method !== "HEAD" && !origemValida(req.headers)) {
     return respostaErro("Pedido recusado: origem inválida.", 403);
   }
-  const sessao = verificarSessao(req.cookies.get(COOKIE_SESSAO)?.value);
+  const sessao = sessaoValida(req.cookies.get(COOKIE_SESSAO)?.value);
   return sessao ?? respostaErro("Sua sessão expirou. Entre de novo.", 401);
 }
 
 /** Para páginas do servidor. */
 export async function sessaoAtual(): Promise<Sessao | null> {
-  return verificarSessao((await cookies()).get(COOKIE_SESSAO)?.value);
+  return sessaoValida((await cookies()).get(COOKIE_SESSAO)?.value);
 }

@@ -1,6 +1,7 @@
 /** Professores com acesso ao admin, lidos de ADMIN_USUARIOS (JSON). */
 import { z } from "zod";
 import { PREFIXO_HASH } from "./senha.ts";
+import { verificarSessao, type Sessao } from "./sessao.ts";
 
 const usuariosSchema = z.array(
   z.object({
@@ -29,4 +30,21 @@ export function lerUsuarios(): Usuario[] {
 export function buscarUsuario(usuario: string): Usuario | undefined {
   const procurado = usuario.trim().toLowerCase();
   return lerUsuarios().find((u) => u.usuario.toLowerCase() === procurado);
+}
+
+/**
+ * A sessão do cookie, só se o professor ainda está em ADMIN_USUARIOS. Assim, tirar
+ * alguém da lista (e fazer o Redeploy) corta o acesso na hora, sem esperar o cookie
+ * vencer. O nome vem da lista, atualizado (é ele que vai nas mensagens de commit).
+ */
+export function sessaoValida(cookie: string | undefined): Sessao | null {
+  const sessao = verificarSessao(cookie);
+  if (!sessao) return null;
+  try {
+    const usuario = buscarUsuario(sessao.usuario);
+    return usuario ? { ...sessao, nome: usuario.nome } : null;
+  } catch (erro) {
+    console.error(erro);
+    return null;
+  }
 }

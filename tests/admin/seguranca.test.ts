@@ -4,6 +4,7 @@ import { liberarTentativa, MAX_ERROS, MAX_ERROS_IP, reservarTentativa } from "..
 import { destinoSeguro, origemValida } from "../../src/lib/admin/origem.ts";
 import { gerarHash, verificarSenha } from "../../src/lib/admin/senha.ts";
 import { assinarSessao, verificarSessao, VALIDADE_SEGUNDOS } from "../../src/lib/admin/sessao.ts";
+import { sessaoValida } from "../../src/lib/admin/usuarios.ts";
 
 describe("senha", () => {
   test("gera hash scrypt com salt e confere a senha certa", async () => {
@@ -67,6 +68,16 @@ describe("sessão (cookie assinado)", () => {
   test("lixo no cookie não quebra", () => {
     for (const lixo of ["", "a", "a.b.c", ".", "%%%.%%%"]) expect(verificarSessao(lixo)).toBeNull();
     expect(verificarSessao(undefined)).toBeNull();
+  });
+
+  test("professor tirado de ADMIN_USUARIOS perde o acesso na hora, mesmo com cookie válido", async () => {
+    const hash = await gerarHash("senha-de-teste-123");
+    vi.stubEnv("ADMIN_USUARIOS", JSON.stringify([{ usuario: "thay", nome: "Thaysa Rafaele", hash }]));
+    const cookie = assinarSessao("thay", "Thaysa");
+    // O nome vem da lista atual (é o que vai nas mensagens de commit).
+    expect(sessaoValida(cookie)).toMatchObject({ usuario: "thay", nome: "Thaysa Rafaele" });
+    vi.stubEnv("ADMIN_USUARIOS", "[]");
+    expect(sessaoValida(cookie)).toBeNull();
   });
 
   test("sem segredo configurado, ninguém fica logado (e nada quebra)", () => {
