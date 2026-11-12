@@ -1,7 +1,7 @@
 "use client";
 
 import type { Ref } from "react";
-import type { ErroCampo } from "@/lib/admin/validacaoJogo";
+import type { ErroCampo } from "@/lib/admin/formulario";
 import { contar } from "@/lib/formato";
 import { estilos } from "./estilos";
 

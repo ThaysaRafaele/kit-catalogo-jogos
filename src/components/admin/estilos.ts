@@ -3,6 +3,9 @@
  * texto grande, contorno forte nos campos e mensagens de erro bem visíveis.
  */
 export const estilos = {
+  /** Campo de escolher arquivo (desenhos e fotos), com o botão no mesmo visual. */
+  arquivo:
+    "w-full rounded-lg border-2 border-tinta bg-papel-claro p-2 text-base file:mr-3 file:cursor-pointer file:rounded-lg file:border-2 file:border-tinta file:bg-papel file:px-3 file:py-1.5 file:font-bold",
   campo:
     "w-full rounded-lg border-2 border-tinta bg-papel-claro px-3 py-2 text-lg text-tinta aria-invalid:border-erro aria-invalid:bg-erro-fundo",
   rotulo: "font-bold text-tinta",

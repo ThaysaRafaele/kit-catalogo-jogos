@@ -21,13 +21,16 @@ import {
   tamanhoLegivel,
   type ImagemPreparada,
 } from "@/lib/admin/imagemNavegador";
-import { idDoCampo, validarJogo, type ErroCampo } from "@/lib/admin/validacaoJogo";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { idDoCampo, type ErroCampo } from "@/lib/admin/formulario";
+import { pedir } from "@/lib/admin/pedir";
+import { validarJogo } from "@/lib/admin/validacaoJogo";
+import { classeBotao } from "@/lib/botoes";
 import { ancoraDoJogo } from "@/lib/formato";
 import { TEMAS } from "@/lib/temas";
 import { Campo } from "./Campo";
 import { Grupo } from "./Grupo";
 import { Linhas } from "./Linhas";
+import { CaixaResultado, useAvisoAoSair, useUrlsDePrevia, type Resultado } from "./publicacao";
 import { juntarErros, ResumoErros } from "./ResumoErros";
 import { estilos } from "./estilos";
 
@@ -47,23 +50,10 @@ type Props = {
 
 type Caminho = (string | number)[];
 
-type Resultado =
-  | {
-      tipo: "ok";
-      slug: string;
-      /** Links dos commits (vazio no modo local). Mais de um quando os desenhos foram separados. */
-      commits: string[];
-      /** Desenhos que não chegaram, quando foram enviados um por um. */
-      falhas: string[];
-    }
-  | { tipo: "erro"; texto: string; conflito: boolean };
-
 /** Desenho escolhido nesta visita, já reduzido e convertido, esperando o "Publicar". */
 type DesenhoNovo = ImagemPreparada & { arquivo: File; url: string; clarear: boolean };
 
 type Rascunho = { salvoEm: string; entrada: EntradaJogo };
-
-const botao = (variante: "primary" | "secondary" | "ghost") => `${BASE_BOTAO} ${estiloBotao(variante)}`;
 
 function ler(objeto: unknown, caminho: Caminho): unknown {
   return caminho.reduce<unknown>((atual, chave) => (atual as Record<string | number, unknown>)?.[chave], objeto);
@@ -94,7 +84,6 @@ export function FormJogo(props: Props) {
   const [imagens, setImagens] = useState(props.imagens);
   const [sha, setSha] = useState(props.sha);
   const [slugOriginal, setSlugOriginal] = useState(props.slugOriginal);
-  const [slugsDaEdicao, setSlugsDaEdicao] = useState(props.slugsDaEdicao);
   // Jogo já publicado: o slug não acompanha mais o nome sozinho.
   const [slugManual, setSlugManual] = useState(props.slugOriginal !== null);
   const [tentouPublicar, setTentouPublicar] = useState(false);
@@ -111,22 +100,7 @@ export function FormJogo(props: Props) {
   const [preparando, setPreparando] = useState<Partial<Record<TipoDesenho, boolean>>>({});
   /** Conta as preparações de cada desenho: só vale o resultado da mais recente. */
   const ultimaPreparacao = useRef<Partial<Record<TipoDesenho, number>>>({});
-  /** Toda URL de prévia criada, para liberar a memória ao sair da página. */
-  const urlsCriadas = useRef(new Set<string>());
-
-  useEffect(() => {
-    const urls = urlsCriadas.current;
-    return () => {
-      for (const url of urls) URL.revokeObjectURL(url);
-      urls.clear();
-    };
-  }, []);
-
-  function liberarUrl(url: string | undefined) {
-    if (!url) return;
-    URL.revokeObjectURL(url);
-    urlsCriadas.current.delete(url);
-  }
+  const urls = useUrlsDePrevia();
 
   const gravado = useRef(JSON.stringify(inicial));
   const resumo = useRef<HTMLDivElement>(null);
@@ -136,16 +110,18 @@ export function FormJogo(props: Props) {
   const chaveDe = (slug: string | null) => `admin-rascunho:${ano}:${slug ?? "novo"}`;
   const chaveRascunho = chaveDe(slugOriginal);
 
+  // Endereços dos outros jogos: os da página, sem o deste jogo (o gravado e o atual, se trocou).
   const slugsOcupados = useMemo(
-    () => slugsDaEdicao.filter((s) => s !== slugOriginal),
-    [slugsDaEdicao, slugOriginal],
-  );
-  const errosLocais = useMemo(
-    () => validarJogo(entrada, { ano, turmas, slugsOcupados }).erros,
-    [entrada, ano, turmas, slugsOcupados],
+    () => props.slugsDaEdicao.filter((s) => s !== props.slugOriginal && s !== slugOriginal),
+    [props.slugsDaEdicao, props.slugOriginal, slugOriginal],
   );
   // Os erros aparecem depois da primeira tentativa de publicar e somem conforme a pessoa corrige.
-  const erros = tentouPublicar ? juntarErros(errosLocais, errosServidor) : [];
+  // Antes disso, não valida a cada tecla.
+  const errosLocais = useMemo(
+    () => (tentouPublicar ? validarJogo(entrada, { ano, turmas, slugsOcupados }).erros : []),
+    [tentouPublicar, entrada, ano, turmas, slugsOcupados],
+  );
+  const erros = juntarErros(errosLocais, errosServidor);
   const erroDe = (caminho: Caminho) => erros.find((e) => e.id === idDoCampo(caminho))?.mensagem;
   const alterado = JSON.stringify(entrada) !== gravado.current || Object.keys(desenhosNovos).length > 0;
 
@@ -155,13 +131,7 @@ export function FormJogo(props: Props) {
     if (salvo && JSON.stringify(salvo.entrada) !== gravado.current) setRascunho(salvo);
   }, [chaveRascunho]);
 
-  // Avisa antes de sair da página com alterações não publicadas.
-  useEffect(() => {
-    if (!alterado) return;
-    const avisar = (evento: BeforeUnloadEvent) => evento.preventDefault();
-    window.addEventListener("beforeunload", avisar);
-    return () => window.removeEventListener("beforeunload", avisar);
-  }, [alterado]);
+  useAvisoAoSair(alterado);
 
   function mudar(caminho: Caminho, valor: unknown) {
     setEntrada((atual) => definir(atual, caminho, valor));
@@ -213,7 +183,7 @@ export function FormJogo(props: Props) {
 
   function apagarRascunho(...chaves: string[]) {
     try {
-      for (const chave of chaves.length > 0 ? chaves : [chaveRascunho]) window.localStorage.removeItem(chave);
+      for (const chave of chaves) window.localStorage.removeItem(chave);
     } catch {
       // Sem armazenamento, não há rascunho para apagar.
     }
@@ -228,15 +198,21 @@ export function FormJogo(props: Props) {
   }
 
   function descartarRascunho() {
-    apagarRascunho();
+    apagarRascunho(chaveRascunho);
     setRascunho(null);
     setStatus("Rascunho descartado.");
+  }
+
+  function mostrar(novo: Resultado) {
+    setResultado(novo);
+    setStatus("");
+    requestAnimationFrame(() => caixaResultado.current?.focus());
   }
 
   async function publicar() {
     setTentouPublicar(true);
     setResultado(null);
-    if (errosLocais.length > 0) {
+    if (validarJogo(entrada, { ano, turmas, slugsOcupados }).erros.length > 0) {
       focarNoResumo();
       return;
     }
@@ -251,110 +227,79 @@ export function FormJogo(props: Props) {
 
     setEnviando(true);
     setStatus("Publicando...");
-    const mostrarErro = (texto: string, conflito = false) => {
-      setResultado({ tipo: "erro", texto, conflito });
-      setStatus("");
-      requestAnimationFrame(() => caixaResultado.current?.focus());
-    };
-
     let slugFinal = slugOriginal;
     const commits: string[] = [];
     const enviados: TipoDesenho[] = [];
     const falhas: string[] = [];
 
-    try {
-      if (fichaMudou) {
-        // Ficha e desenhos num commit só, se couberem numa requisição (medida em bytes,
-        // com o envelope de cada parte). Se não, a ficha vai sozinha e os desenhos depois.
-        const dados = JSON.stringify({ entrada, sha });
-        const tamanho =
-          new Blob([dados]).size +
-          ENVELOPE_POR_PARTE +
-          novos.reduce((soma, tipo) => soma + desenhosNovos[tipo]!.blob.size + ENVELOPE_POR_PARTE, 0);
-        const juntos = novos.length > 0 && tamanho <= LIMITE_POR_REQUISICAO;
-        let corpoEnvio: BodyInit = dados;
-        if (juntos) {
-          const form = new FormData();
-          form.append("dados", dados);
-          for (const tipo of novos) form.append(`desenho-${tipo}`, desenhosNovos[tipo]!.blob, `${tipo}.webp`);
-          corpoEnvio = form;
-        }
-
-        const url = slugOriginal ? `/api/admin/edicoes/${ano}/jogos/${slugOriginal}` : `/api/admin/edicoes/${ano}/jogos`;
-        const resposta = await fetch(url, {
-          method: slugOriginal ? "PUT" : "POST",
-          // Com FormData, o navegador põe sozinho o Content-Type com o separador das partes.
-          headers: juntos ? undefined : { "Content-Type": "application/json" },
-          body: corpoEnvio,
-        });
-        const corpo = (await resposta.json().catch(() => ({}))) as {
-          erro?: string;
-          erros?: ErroCampo[];
-          slug?: string;
-          sha?: string;
-          commitUrl?: string;
-        };
-
-        if (!resposta.ok || !corpo.slug || !corpo.sha) {
-          if (resposta.status === 422 && corpo.erros && corpo.erros.length > 0) {
-            setErrosServidor(corpo.erros);
-            setStatus("");
-            focarNoResumo();
-          } else {
-            mostrarErro(corpo.erro ?? "Não foi possível publicar. Tente de novo.", resposta.status === 409);
-          }
-          setEnviando(false);
-          return;
-        }
-
-        const novoSlug = corpo.slug;
-        slugFinal = novoSlug;
-        if (corpo.commitUrl) commits.push(corpo.commitUrl);
-        if (juntos) enviados.push(...novos);
-
-        // Desenhos já gravados que mudaram de pasta com o slug.
-        if (slugOriginal && slugOriginal !== novoSlug) {
-          const antes = `/edicoes/${ano}/${slugOriginal}/`;
-          const depois = `/edicoes/${ano}/${novoSlug}/`;
-          setImagens((atuais) => atuais.map((src) => (src.startsWith(antes) ? depois + src.slice(antes.length) : src)));
-        }
-        setSlugsDaEdicao((atuais) => [...atuais.filter((s) => s !== slugOriginal && s !== novoSlug), novoSlug]);
-        setSha(corpo.sha);
-        setSlugOriginal(novoSlug);
-        setSlugManual(true);
-        gravado.current = JSON.stringify(entrada);
-        // O rascunho do endereço antigo (ou de "Novo jogo") e o do novo: os dois ficaram velhos.
-        apagarRascunho(chaveDe(slugOriginal), chaveDe(novoSlug));
-        // O endereço passa a ser o da edição do jogo, sem recarregar a página.
-        window.history.replaceState(null, "", `/admin/${ano}/jogo/${novoSlug}`);
-      }
-
-      // Desenhos que não foram junto com a ficha: um por requisição (e um commit cada).
-      const restantes = novos.filter((tipo) => !enviados.includes(tipo));
-      for (const [i, tipo] of restantes.entries()) {
-        setStatus(`${fichaMudou ? "Ficha publicada. " : ""}Enviando desenho ${i + 1} de ${restantes.length}...`);
+    if (fichaMudou) {
+      // Ficha e desenhos num commit só, se couberem numa requisição (medida em bytes,
+      // com o envelope de cada parte). Se não, a ficha vai sozinha e os desenhos depois.
+      const dados = { entrada, sha };
+      const tamanho =
+        new Blob([JSON.stringify(dados)]).size +
+        ENVELOPE_POR_PARTE +
+        novos.reduce((soma, tipo) => soma + desenhosNovos[tipo]!.blob.size + ENVELOPE_POR_PARTE, 0);
+      const juntos = novos.length > 0 && tamanho <= LIMITE_POR_REQUISICAO;
+      let corpo: object | FormData = dados;
+      if (juntos) {
         const form = new FormData();
-        form.append("arquivo", desenhosNovos[tipo]!.blob, `${tipo}.webp`);
-        try {
-          const r = await fetch(`/api/admin/edicoes/${ano}/jogos/${slugFinal}/desenhos/${tipo}`, {
-            method: "PUT",
-            body: form,
-          });
-          const c = (await r.json().catch(() => ({}))) as { erro?: string; commitUrl?: string };
-          if (r.ok) {
-            enviados.push(tipo);
-            if (c.commitUrl) commits.push(c.commitUrl);
-          } else {
-            falhas.push(`${NOMES_DESENHO[tipo]}: ${c.erro ?? "não foi enviado"}`);
-          }
-        } catch {
-          falhas.push(`${NOMES_DESENHO[tipo]}: sem conexão com o servidor`);
-        }
+        form.append("dados", JSON.stringify(dados));
+        for (const tipo of novos) form.append(`desenho-${tipo}`, desenhosNovos[tipo]!.blob, `${tipo}.webp`);
+        corpo = form;
       }
-    } catch {
-      mostrarErro("Sem conexão com o servidor. Nada foi publicado.");
-      setEnviando(false);
-      return;
+
+      const { ok, status: codigo, corpo: r } = await pedir<{ slug: string; sha: string }>(
+        slugOriginal ? `/api/admin/edicoes/${ano}/jogos/${slugOriginal}` : `/api/admin/edicoes/${ano}/jogos`,
+        slugOriginal ? "PUT" : "POST",
+        corpo,
+      );
+      if (!ok || !r.slug || !r.sha) {
+        if (codigo === 422 && r.erros && r.erros.length > 0) {
+          setErrosServidor(r.erros);
+          setStatus("");
+          focarNoResumo();
+        } else {
+          mostrar({ tipo: "erro", texto: r.erro ?? "Não foi possível publicar. Tente de novo.", conflito: codigo === 409 });
+        }
+        setEnviando(false);
+        return;
+      }
+
+      const novoSlug = r.slug;
+      slugFinal = novoSlug;
+      if (r.commitUrl) commits.push(r.commitUrl);
+      if (juntos) enviados.push(...novos);
+
+      // Desenhos já gravados que mudaram de pasta com o slug.
+      if (slugOriginal && slugOriginal !== novoSlug) {
+        const antes = `/edicoes/${ano}/${slugOriginal}/`;
+        const depois = `/edicoes/${ano}/${novoSlug}/`;
+        setImagens((atuais) => atuais.map((src) => (src.startsWith(antes) ? depois + src.slice(antes.length) : src)));
+      }
+      setSha(r.sha);
+      setSlugOriginal(novoSlug);
+      setSlugManual(true);
+      gravado.current = JSON.stringify(entrada);
+      // O rascunho do endereço antigo (ou de "Novo jogo") e o do novo: os dois ficaram velhos.
+      apagarRascunho(chaveDe(slugOriginal), chaveDe(novoSlug));
+      // O endereço passa a ser o da edição do jogo, sem recarregar a página.
+      window.history.replaceState(null, "", `/admin/${ano}/jogo/${novoSlug}`);
+    }
+
+    // Desenhos que não foram junto com a ficha: um por requisição (e um commit cada).
+    const restantes = novos.filter((tipo) => !enviados.includes(tipo));
+    for (const [i, tipo] of restantes.entries()) {
+      setStatus(`${fichaMudou ? "Ficha publicada. " : ""}Enviando desenho ${i + 1} de ${restantes.length}...`);
+      const form = new FormData();
+      form.append("arquivo", desenhosNovos[tipo]!.blob, `${tipo}.webp`);
+      const { ok, corpo: r } = await pedir(`/api/admin/edicoes/${ano}/jogos/${slugFinal}/desenhos/${tipo}`, "PUT", form);
+      if (ok) {
+        enviados.push(tipo);
+        if (r.commitUrl) commits.push(r.commitUrl);
+      } else {
+        falhas.push(`${NOMES_DESENHO[tipo]}: ${r.erro ?? "não foi enviado"}`);
+      }
     }
 
     if (fichaMudou || enviados.length > 0) {
@@ -362,18 +307,30 @@ export function FormJogo(props: Props) {
       const slug = slugFinal!;
       setImagens((atuais) => [...new Set([...atuais, ...enviados.map((tipo) => srcDesenho(ano, slug, tipo))])]);
       setPreviasPublicadas((atuais) => {
-        for (const tipo of enviados) liberarUrl(atuais[tipo]);
+        for (const tipo of enviados) urls.liberar(atuais[tipo]);
         return { ...atuais, ...Object.fromEntries(enviados.map((tipo) => [tipo, desenhosNovos[tipo]!.url])) };
       });
       setDesenhosNovos((atuais) =>
         Object.fromEntries(Object.entries(atuais).filter(([tipo]) => !enviados.includes(tipo as TipoDesenho))),
       );
-      setResultado({ tipo: "ok", slug, commits, falhas });
-      setStatus("");
-      requestAnimationFrame(() => caixaResultado.current?.focus());
+      mostrar({
+        tipo: "ok",
+        commits,
+        extra: falhas.length > 0 && (
+          <div className={estilos.caixaErro}>
+            <p className="font-bold">A ficha foi publicada, mas faltou enviar:</p>
+            <ul className="list-disc pl-6">
+              {falhas.map((falha) => (
+                <li key={falha}>{falha}</li>
+              ))}
+            </ul>
+            <p>Os desenhos que faltaram continuam escolhidos: clique em Publicar de novo para tentar.</p>
+          </div>
+        ),
+      });
     } else {
       // Ficha igual e nenhum desenho chegou: nada foi publicado.
-      mostrarErro(`Nenhum desenho foi enviado. ${falhas.join(" ")}`);
+      mostrar({ tipo: "erro", texto: `Nenhum desenho foi enviado. ${falhas.join(" ")}`, conflito: false });
     }
     setEnviando(false);
   }
@@ -392,10 +349,9 @@ export function FormJogo(props: Props) {
     try {
       const preparada = await prepararImagem(arquivo, clarear);
       if (!atual()) return;
-      const url = URL.createObjectURL(preparada.blob);
-      urlsCriadas.current.add(url);
+      const url = urls.criar(preparada.blob);
       setDesenhosNovos((atuais) => {
-        liberarUrl(atuais[tipo]?.url);
+        urls.liberar(atuais[tipo]?.url);
         return { ...atuais, [tipo]: { ...preparada, arquivo, url, clarear } };
       });
       setStatus(
@@ -416,7 +372,7 @@ export function FormJogo(props: Props) {
     // Uma preparação em andamento não pode trazer o desenho de volta depois.
     ultimaPreparacao.current[tipo] = (ultimaPreparacao.current[tipo] ?? 0) + 1;
     setPreparando((p) => ({ ...p, [tipo]: false }));
-    liberarUrl(desenhosNovos[tipo]?.url);
+    urls.liberar(desenhosNovos[tipo]?.url);
     setDesenhosNovos((atuais) => Object.fromEntries(Object.entries(atuais).filter(([t]) => t !== tipo)));
     const campo = document.getElementById(`desenho-${tipo}-arquivo`) as HTMLInputElement | null;
     if (campo) campo.value = "";
@@ -489,7 +445,7 @@ export function FormJogo(props: Props) {
               const arquivo = e.target.files?.[0];
               if (arquivo) prepararDesenho(tipo, arquivo, novo?.clarear ?? false);
             }}
-            className="w-full rounded-lg border-2 border-tinta bg-papel-claro p-2 text-base file:mr-3 file:cursor-pointer file:rounded-lg file:border-2 file:border-tinta file:bg-papel file:px-3 file:py-1.5 file:font-bold"
+            className={estilos.arquivo}
           />
           {erroArquivo && (
             <p id={`${idArquivo}-erro`} className={estilos.erroCampo}>
@@ -508,12 +464,12 @@ export function FormJogo(props: Props) {
               onClick={() => {
                 if (!ocupado) prepararDesenho(tipo, novo.arquivo, !novo.clarear);
               }}
-              className={`${BASE_BOTAO} ${estiloBotao("toggle", novo.clarear)}`}
+              className={classeBotao("toggle", novo.clarear)}
             >
               <span aria-hidden="true">{novo.clarear ? "■" : "□"}</span>
               Clarear fundo do papel
             </button>
-            <button type="button" onClick={() => desfazerDesenho(tipo)} disabled={enviando} className={botao("ghost")}>
+            <button type="button" onClick={() => desfazerDesenho(tipo)} disabled={enviando} className={classeBotao("ghost")}>
               Desfazer a troca
             </button>
           </div>
@@ -522,7 +478,7 @@ export function FormJogo(props: Props) {
           linhas: 2,
           ajuda: "Obrigatória. Diga o que aparece no desenho, em uma ou duas frases.",
           acao: (
-            <button type="button" onClick={sugerir} className={`${botao("ghost")} self-start`}>
+            <button type="button" onClick={sugerir} className={`${classeBotao("ghost")} self-start`}>
               Sugerir descrição a partir da ficha
             </button>
           ),
@@ -546,70 +502,24 @@ export function FormJogo(props: Props) {
             {new Date(rascunho.salvoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}.
           </p>
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={recuperarRascunho} className={botao("secondary")}>
+            <button type="button" onClick={recuperarRascunho} className={classeBotao("secondary")}>
               Recuperar rascunho
             </button>
-            <button type="button" onClick={descartarRascunho} className={botao("ghost")}>
+            <button type="button" onClick={descartarRascunho} className={classeBotao("ghost")}>
               Descartar rascunho
             </button>
           </div>
         </div>
       )}
 
-      <div ref={caixaResultado} tabIndex={-1} className={resultado ? "" : "sr-only"}>
-        {resultado?.tipo === "ok" && (
-          <div className={`${estilos.caixaOk} flex flex-col gap-2`}>
-            <p className="font-bold">
-              {resultado.commits.length > 0
-                ? "Publicado! O catálogo atualiza em cerca de 2 minutos."
-                : "Salvo no modo local: os arquivos do projeto foram atualizados, sem commit."}
-            </p>
-            {resultado.falhas.length > 0 && (
-              <div className={estilos.caixaErro}>
-                <p className="font-bold">A ficha foi publicada, mas faltou enviar:</p>
-                <ul className="list-disc pl-6">
-                  {resultado.falhas.map((falha) => (
-                    <li key={falha}>{falha}</li>
-                  ))}
-                </ul>
-                <p>Os desenhos que faltaram continuam escolhidos: clique em Publicar de novo para tentar.</p>
-              </div>
-            )}
-            <ul className="flex flex-wrap gap-x-5 gap-y-1">
-              {resultado.commits.map((commit, i) => (
-                <li key={commit}>
-                  <a href={commit} target="_blank" rel="noopener">
-                    {resultado.commits.length > 1
-                      ? `Ver o commit ${i + 1} de ${resultado.commits.length} no GitHub (abre em nova aba)`
-                      : "Ver o commit no GitHub (abre em nova aba)"}
-                  </a>
-                </li>
-              ))}
-              <li>
-                <a href={`/${ano}#${ancoraDoJogo(resultado.slug)}`} target="_blank" rel="noopener">
-                  Ver no catálogo (abre em nova aba)
-                </a>
-              </li>
-              <li>
-                <a href={`/admin?ano=${ano}`}>Voltar ao painel</a>
-              </li>
-            </ul>
-          </div>
-        )}
-        {resultado?.tipo === "erro" && (
-          <div className={`${estilos.caixaErro} flex flex-col gap-3`}>
-            <p className="font-bold">{resultado.texto}</p>
-            {resultado.conflito && (
-              <>
-                <p>Salve um rascunho antes de recarregar, para não perder o que você digitou.</p>
-                <button type="button" onClick={() => window.location.reload()} className={`${botao("secondary")} self-start`}>
-                  Recarregar a página
-                </button>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+      <CaixaResultado
+        resultado={resultado}
+        ref={caixaResultado}
+        links={[
+          { href: `/${ano}#${ancoraDoJogo(slugOriginal ?? "")}`, texto: "Ver no catálogo", novaAba: true },
+          { href: `/admin?ano=${ano}`, texto: "Voltar ao painel" },
+        ]}
+      />
 
       <ResumoErros erros={erros} ref={resumo} />
 
@@ -818,10 +728,10 @@ export function FormJogo(props: Props) {
         </fieldset>
 
         <div className="sticky bottom-0 z-1 flex flex-wrap items-center gap-3 border-t-[3px] border-tinta bg-papel-escuro py-4">
-          <button type="button" onClick={salvarRascunho} disabled={desabilitar} className={botao("secondary")}>
+          <button type="button" onClick={salvarRascunho} disabled={desabilitar} className={classeBotao("secondary")}>
             Salvar rascunho no navegador
           </button>
-          <button type="submit" disabled={desabilitar} className={botao("primary")}>
+          <button type="submit" disabled={desabilitar} className={classeBotao("primary")}>
             {enviando ? "Publicando..." : "Publicar"}
           </button>
           <p aria-live="polite" className="min-h-6 flex-1 basis-60">

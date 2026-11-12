@@ -3,10 +3,9 @@
  * no servidor, como o formulário do jogo.
  */
 import { edicaoSchema, MARCADOR_VAZIO } from "../esquema.ts";
-import { limparConteudo } from "../limpeza.ts";
-import { lista, objeto, texto } from "./formularioJogo.ts";
+import { conferirComoBuild } from "../limpeza.ts";
+import { coletorDeErros, indicesPreenchidos, lista, objeto, texto } from "./formulario.ts";
 import { rotuloDoCampo } from "./rotulos.ts";
-import { idDoCampo, type ErroCampo } from "./validacaoJogo.ts";
 
 export type LinhaTurma = {
   id: string;
@@ -55,7 +54,11 @@ export function paraFormularioEdicao(bruto: unknown): EntradaEdicao {
  * das fichas: o `npm run validar` continua avisando o que falta. Lema e mentor
  * vazios não entram no arquivo.
  */
-export function paraGravarEdicao(e: EntradaEdicao, ano: string | number) {
+/** Linha com algum conteúdo: só essas vão para o arquivo. */
+const turmaPreenchida = (t: LinhaTurma) => Boolean(t.id.trim() || t.lema.trim() || t.mentor.trim());
+const creditoPreenchido = (c: EntradaEdicao["creditos"][number]) => Boolean(c.funcao.trim() || c.nome.trim());
+
+function paraGravarEdicao(e: EntradaEdicao, ano: string | number) {
   const t = (valor: string) => valor.trim();
   return {
     ano: Number(ano),
@@ -63,9 +66,9 @@ export function paraGravarEdicao(e: EntradaEdicao, ano: string | number) {
     textoAbertura: t(e.textoAbertura) || MARCADOR_VAZIO,
     agradecimento: t(e.agradecimento) || MARCADOR_VAZIO,
     turmas: e.turmas
-      .filter((turma) => t(turma.id) || t(turma.lema) || t(turma.mentor))
+      .filter(turmaPreenchida)
       .map((turma) => ({ id: t(turma.id), lema: t(turma.lema) || undefined, mentor: t(turma.mentor) || undefined })),
-    creditos: e.creditos.map((c) => ({ funcao: t(c.funcao), nome: t(c.nome) })).filter((c) => c.funcao || c.nome),
+    creditos: e.creditos.filter(creditoPreenchido).map((c) => ({ funcao: t(c.funcao), nome: t(c.nome) })),
   };
 }
 
@@ -80,11 +83,7 @@ function rotuloDoErro(caminho: (string | number)[]) {
 
 export function validarEdicao(e: EntradaEdicao, ano: string | number) {
   const gravar = paraGravarEdicao(e, ano);
-  const erros: ErroCampo[] = [];
-  const adicionar = (caminho: (string | number)[], mensagem: string) => {
-    const id = idDoCampo(caminho);
-    if (!erros.some((erro) => erro.id === id)) erros.push({ id, rotulo: rotuloDoErro(caminho), mensagem });
-  };
+  const { erros, adicionar, adicionarDoEsquema } = coletorDeErros(rotuloDoErro);
 
   if (!gravar.titulo) adicionar(["titulo"], "Escreva o título da edição.");
 
@@ -92,7 +91,7 @@ export function validarEdicao(e: EntradaEdicao, ano: string | number) {
   const vistos = new Set<string>();
   e.turmas.forEach((turma, i) => {
     const id = turma.id.trim();
-    if (!id && !turma.lema.trim() && !turma.mentor.trim()) return;
+    if (!turmaPreenchida(turma)) return;
     // "PREENCHER" vira nome vazio no build: para a turma, é o mesmo que não ter nome.
     if (!id || id.includes(MARCADOR_VAZIO)) adicionar(["turmas", i, "id"], "Escreva o nome da turma (ex.: 2º G).");
     else if (vistos.has(id)) adicionar(["turmas", i, "id"], `A turma "${id}" já está na lista.`);
@@ -108,22 +107,11 @@ export function validarEdicao(e: EntradaEdicao, ano: string | number) {
   });
 
   // E o esquema do build, sempre: o resumo mostra todos os problemas de uma vez.
-  // O arquivo não tem as linhas vazias da tela: o índice do esquema volta a ser o da tela,
-  // para o erro cair no mesmo campo do aviso acima (e não aparecer duas vezes).
-  const naTela = {
-    turmas: e.turmas.flatMap((t, i) => (t.id.trim() || t.lema.trim() || t.mentor.trim() ? [i] : [])),
-    creditos: e.creditos.flatMap((c, i) => (c.funcao.trim() || c.nome.trim() ? [i] : [])),
-  };
-  const resultado = edicaoSchema.safeParse(limparConteudo(gravar, { existeImagem: () => true }, []));
-  if (!resultado.success) {
-    for (const issue of resultado.error.issues) {
-      const caminho = issue.path.filter((p): p is string | number => typeof p !== "symbol");
-      const [lista, indice] = caminho;
-      if ((lista === "turmas" || lista === "creditos") && typeof indice === "number") {
-        caminho[1] = naTela[lista][indice] ?? indice;
-      }
-      adicionar(caminho, issue.message);
-    }
-  }
+  adicionarDoEsquema(conferirComoBuild(edicaoSchema, gravar), {
+    indicesNaTela: {
+      turmas: indicesPreenchidos(e.turmas, turmaPreenchida),
+      creditos: indicesPreenchidos(e.creditos, creditoPreenchido),
+    },
+  });
   return { erros, gravar };
 }

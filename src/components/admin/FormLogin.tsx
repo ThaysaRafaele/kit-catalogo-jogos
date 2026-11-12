@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { pedir } from "@/lib/admin/pedir";
+import { classeBotao } from "@/lib/botoes";
 import { estilos } from "./estilos";
 
 type Props = { volta: string; saiu: boolean };
@@ -16,22 +17,16 @@ export function FormLogin({ volta, saiu }: Props) {
     const dados = new FormData(evento.currentTarget);
     setEnviando(true);
     setErro("");
-    try {
-      const resposta = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario: dados.get("usuario"), senha: dados.get("senha") }),
-      });
-      if (resposta.ok) {
-        // Navegação completa: o layout do servidor relê o cookie novo.
-        window.location.assign(volta);
-        return;
-      }
-      const corpo = (await resposta.json().catch(() => ({}))) as { erro?: string };
-      setErro(corpo.erro ?? "Não foi possível entrar. Tente de novo.");
-    } catch {
-      setErro("Sem conexão com o servidor. Confira a internet e tente de novo.");
+    const { ok, corpo } = await pedir("/api/admin/login", "POST", {
+      usuario: dados.get("usuario"),
+      senha: dados.get("senha"),
+    });
+    if (ok) {
+      // Navegação completa: o layout do servidor relê o cookie novo.
+      window.location.assign(volta);
+      return;
     }
+    setErro(corpo.erro ?? "Não foi possível entrar. Tente de novo.");
     setEnviando(false);
     // Leva o foco ao erro: o NVDA lê a mensagem logo depois do envio.
     requestAnimationFrame(() => caixaErro.current?.focus());
@@ -79,7 +74,7 @@ export function FormLogin({ volta, saiu }: Props) {
         />
       </div>
 
-      <button type="submit" disabled={enviando} className={`${BASE_BOTAO} ${estiloBotao("primary")} self-start`}>
+      <button type="submit" disabled={enviando} className={`${classeBotao("primary")} self-start`}>
         {enviando ? "Entrando..." : "Entrar"}
       </button>
     </form>

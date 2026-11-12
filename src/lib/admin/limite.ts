@@ -13,7 +13,7 @@
  */
 export const MAX_ERROS = 5;
 export const MAX_ERROS_IP = 30;
-export const JANELA_MS = 15 * 60 * 1000;
+const JANELA_MS = 15 * 60 * 1000;
 
 const erros = new Map<string, number[]>();
 

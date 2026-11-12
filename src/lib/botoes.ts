@@ -11,8 +11,13 @@ const LEVE = "font-pixelify border-2 rounded-[10px] px-4 py-2 text-[17px]";
 const LIGADO = "bg-tinta text-papel";
 const DESLIGADO = "bg-papel-claro/85 text-tinta";
 
+// aria-disabled tem a mesma aparência de disabled: é o que o admin usa quando o botão
+// precisa continuar com o foco (o leitor de tela anuncia "indisponível").
 export const BASE_BOTAO =
-  "inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 border-tinta leading-[1.3] font-bold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 border-tinta leading-[1.3] font-bold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:opacity-40";
+
+/** Classe completa de um botão (ou link com cara de botão). */
+export const classeBotao = (variante: VarianteBotao, ligado = false) => `${BASE_BOTAO} ${estiloBotao(variante, ligado)}`;
 
 export function estiloBotao(variante: VarianteBotao, ligado = false) {
   switch (variante) {

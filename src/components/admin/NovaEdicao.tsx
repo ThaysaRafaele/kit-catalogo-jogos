@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { pedir } from "@/lib/admin/pedir";
+import { classeBotao } from "@/lib/botoes";
 import { useAviso } from "./Aviso";
 import { estilos } from "./estilos";
 
@@ -19,25 +20,16 @@ export function NovaEdicao({ anoSugerido, tituloSugerido }: Props) {
     const dados = new FormData(evento.currentTarget);
     const ano = String(dados.get("ano"));
     setEnviando(true);
-    try {
-      const resposta = await fetch("/api/admin/edicoes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ano, titulo: dados.get("titulo") }),
+    const { ok, corpo } = await pedir("/api/admin/edicoes", "POST", { ano, titulo: dados.get("titulo") });
+    if (ok) {
+      avisar({
+        tipo: "ok",
+        texto: `Edição ${ano} criada. Cadastre as turmas em "Dados da edição" antes de incluir os jogos.`,
       });
-      const corpo = (await resposta.json().catch(() => ({}))) as { erro?: string };
-      if (resposta.ok) {
-        avisar({
-          tipo: "ok",
-          texto: `Edição ${ano} criada. Cadastre as turmas em "Dados da edição" antes de incluir os jogos.`,
-        });
-        router.push(`/admin?ano=${ano}`);
-        router.refresh();
-      } else {
-        avisar({ tipo: "erro", texto: corpo.erro ?? "Não foi possível criar a edição." });
-      }
-    } catch {
-      avisar({ tipo: "erro", texto: "Sem conexão com o servidor. A edição não foi criada." });
+      router.push(`/admin?ano=${ano}`);
+      router.refresh();
+    } else {
+      avisar({ tipo: "erro", texto: corpo.erro ?? "Não foi possível criar a edição." });
     }
     setEnviando(false);
   }
@@ -69,7 +61,7 @@ export function NovaEdicao({ anoSugerido, tituloSugerido }: Props) {
           </label>
           <input id="nova-titulo" name="titulo" required defaultValue={tituloSugerido} className={estilos.campo} />
         </div>
-        <button type="submit" disabled={enviando} className={`${BASE_BOTAO} ${estiloBotao("primary")} self-start`}>
+        <button type="submit" disabled={enviando} className={`${classeBotao("primary")} self-start`}>
           {enviando ? "Criando..." : "Criar edição"}
         </button>
       </form>

@@ -2,7 +2,8 @@
  * Ponte entre a ficha do jogo (JSON) e o formulário do admin. Roda no navegador e
  * no servidor: o mesmo código prepara o que é gravado nos dois lados.
  */
-import { MARCADOR_VAZIO, type Tema } from "../esquema.ts";
+import type { Tema } from "../esquema.ts";
+import { lista, objeto, texto } from "./formulario.ts";
 
 export type TipoDesenho = "protagonista" | "antagonista" | "mundo";
 export const TIPOS_DESENHO: TipoDesenho[] = ["protagonista", "antagonista", "mundo"];
@@ -46,11 +47,6 @@ export type EntradaJogo = {
 };
 
 export const CARACTERISTICAS = 3;
-
-/** Objeto JSON comum (não null, não lista): o formato de toda ficha e edição. */
-export function ehObjeto(valor: unknown): valor is Record<string, unknown> {
-  return typeof valor === "object" && valor !== null && !Array.isArray(valor);
-}
 
 export function srcDesenho(ano: string | number, slug: string, tipo: TipoDesenho) {
   return `/edicoes/${ano}/${slug}/${tipo}.webp`;
@@ -101,14 +97,6 @@ export function jogoVazio(turma = ""): EntradaJogo {
     autorizacaoImagem: false,
   };
 }
-
-// Leitores do JSON para os formulários (jogo, edição, mentores): aceitam qualquer
-// coisa e devolvem sempre o tipo esperado.
-
-/** Texto do JSON: o que não é texto, ou ainda tem "PREENCHER", vira campo vazio. */
-export const texto = (valor: unknown) => (typeof valor === "string" && !valor.includes(MARCADOR_VAZIO) ? valor : "");
-export const objeto = (valor: unknown) => (ehObjeto(valor) ? valor : {});
-export const lista = (valor: unknown) => (Array.isArray(valor) ? valor : []);
 
 /**
  * Ficha gravada (qualquer formato) → estado do formulário. Também é por aqui que o

@@ -9,16 +9,8 @@ import { lerEdicao, listarJogos } from "./dados.ts";
 import { NOMES_DESENHO, paraFormulario, TIPOS_DESENHO, type EntradaJogo, type TipoDesenho } from "./formularioJogo.ts";
 import { formatarJson } from "./json.ts";
 import { lerArquivo, salvarArquivos, shaDoGit } from "./repositorio.ts";
-import { validarJogo, type ErroCampo } from "./validacaoJogo.ts";
-
-export class ValidacaoError extends Error {
-  readonly erros: ErroCampo[];
-  constructor(erros: ErroCampo[], mensagem = "A ficha tem campos para corrigir.") {
-    super(mensagem);
-    this.name = "ValidacaoError";
-    this.erros = erros;
-  }
-}
+import { ValidacaoError } from "./formulario.ts";
+import { validarJogo } from "./validacaoJogo.ts";
 
 export type PedidoPublicacao = {
   ano: string;

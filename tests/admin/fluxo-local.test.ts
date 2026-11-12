@@ -19,6 +19,7 @@ let m: {
   mentor: typeof import("../../src/lib/admin/publicarMentor.ts");
   repo: typeof import("../../src/lib/admin/repositorio.ts");
   form: typeof import("../../src/lib/admin/formularioJogo.ts");
+  formulario: typeof import("../../src/lib/admin/formulario.ts");
   imagem: typeof import("../../src/lib/admin/imagem.ts");
   conteudo: typeof import("../../src/lib/conteudo.ts");
 };
@@ -85,6 +86,7 @@ beforeAll(async () => {
     mentor: await import("../../src/lib/admin/publicarMentor.ts"),
     repo: await import("../../src/lib/admin/repositorio.ts"),
     form: await import("../../src/lib/admin/formularioJogo.ts"),
+    formulario: await import("../../src/lib/admin/formulario.ts"),
     imagem: await import("../../src/lib/admin/imagem.ts"),
     conteudo: await import("../../src/lib/conteudo.ts"),
   };
@@ -137,7 +139,7 @@ test("fluxo completo: publicar, renomear, mudar turma, mentores, excluir e valid
   await passo("jogo com o mesmo slug é recusado", async () => {
     await expect(
       m.jogo.publicarJogo({ ano: "2026", entrada: entrada("jogo-de-teste", "1º H"), slugOriginal: null, sha: null, autor: "T" }),
-    ).rejects.toBeInstanceOf(m.jogo.ValidacaoError);
+    ).rejects.toBeInstanceOf(m.formulario.ValidacaoError);
   });
 
   await passo("trocar o slug leva a ficha e o desenho", async () => {

@@ -8,8 +8,9 @@ import { caminhos } from "./caminhos.ts";
 import { mensagemCommit } from "./commit.ts";
 import { jogosDaEdicao, lerJson } from "./dados.ts";
 import { paraFormularioEdicao, validarEdicao } from "./formularioEdicao.ts";
+import { contar } from "../formato.ts";
 import { formatarJson } from "./json.ts";
-import { ValidacaoError } from "./publicarJogo.ts";
+import { ValidacaoError } from "./formulario.ts";
 import { salvarArquivos, shaDoGit, type ArquivoParaSalvar } from "./repositorio.ts";
 
 export async function publicarEdicao(ano: string, entradaBruta: unknown, sha: string, autor: string) {
@@ -18,7 +19,7 @@ export async function publicarEdicao(ano: string, entradaBruta: unknown, sha: st
   const { erros, gravar } = validarEdicao(entrada, ano);
   if (erros.length > 0) throw new ValidacaoError(erros);
 
-  const [atual, { arquivos, jogos }] = await Promise.all([lerJson(caminhos.edicao(ano)), jogosDaEdicao(ano)]);
+  const atual = await lerJson(caminhos.edicao(ano));
   if (!atual) throw new ValidacaoError([], "Esta edição não tem edicao.json. Crie a edição pelo painel.");
   const dadosAtuais = "dados" in atual ? atual.dados : {};
   const idsAtuais = Array.isArray(dadosAtuais.turmas)
@@ -34,13 +35,19 @@ export async function publicarEdicao(ano: string, entradaBruta: unknown, sha: st
     mantidas.add(turma.original);
     if (turma.original !== id) renomeadas.set(turma.original, id);
   }
+  const removidas = idsAtuais.filter((id) => !mantidas.has(id));
+
+  // Só quando alguma turma muda de nome ou sai é que os jogos importam. Mudar só
+  // título, textos ou créditos (o caso comum) não lê ficha de jogo nenhuma.
+  const mexeNasTurmas = renomeadas.size > 0 || removidas.length > 0;
+  const { arquivos, jogos } = mexeNasTurmas ? await jogosDaEdicao(ano) : { arquivos: [], jogos: [] };
   const daTurma = (id: string) => jogos.filter(({ lido }) => "dados" in lido && lido.dados.turma === id);
 
-  const bloqueios = idsAtuais
-    .filter((id) => !mantidas.has(id) && daTurma(id).length > 0)
+  const bloqueios = removidas
+    .filter((id) => daTurma(id).length > 0)
     .map((id) => {
       const slugs = daTurma(id).map((j) => j.slug);
-      return `A turma "${id}" ainda tem ${slugs.length === 1 ? "1 jogo" : `${slugs.length} jogos`} (${slugs.join(", ")}). Mude a turma desses jogos antes de removê-la.`;
+      return `A turma "${id}" ainda tem ${contar(slugs.length, "jogo", "jogos")} (${slugs.join(", ")}). Mude a turma desses jogos antes de removê-la.`;
     });
   if (bloqueios.length > 0) throw new ValidacaoError([], bloqueios.join(" "));
 
@@ -62,8 +69,8 @@ export async function publicarEdicao(ano: string, entradaBruta: unknown, sha: st
   const { commitUrl } = await salvarArquivos(
     arquivosParaSalvar,
     mensagemCommit(ano, "edita", resumo ? `a edição (turma ${resumo})` : "a edição", autor),
-    // Um jogo criado agora numa turma renomeada ficaria com a turma velha: recusa.
-    { conferirPasta: { pasta: caminhos.pastaJogos(ano), itens: arquivos } },
+    // Um jogo criado agora numa turma renomeada (ou removida) ficaria com a turma velha: recusa.
+    mexeNasTurmas ? { conferirPasta: { pasta: caminhos.pastaJogos(ano), itens: arquivos } } : {},
   );
   return { sha: shaDoGit(conteudo), commitUrl, jogosAtualizados: arquivosParaSalvar.length - 1 };
 }

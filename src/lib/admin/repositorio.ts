@@ -391,7 +391,7 @@ const localRepo = {
 
 // ─── Interface pública ──────────────────────────────────────────────────────────
 
-export function modoLocal() {
+function modoLocal() {
   return process.env.ADMIN_MODO === "local";
 }
 

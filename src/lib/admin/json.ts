@@ -5,7 +5,7 @@
  * o diff no GitHub mostra só o que mudou de verdade.
  */
 import type { z } from "zod";
-import { ehObjeto } from "./formularioJogo.ts";
+import { ehObjeto } from "./formulario.ts";
 
 type Def = {
   type: string;

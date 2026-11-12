@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { pedir } from "@/lib/admin/pedir";
+import { classeBotao } from "@/lib/botoes";
 import { useAviso } from "./Aviso";
 import { estilos } from "./estilos";
 
@@ -29,23 +30,13 @@ export function BotaoExcluir({ nome, url, corpo, explicacao, ocupado = false }: 
 
   async function excluir() {
     setExcluindo(true);
-    try {
-      const resposta = await fetch(url, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(corpo),
-      });
-      const resultado = (await resposta.json().catch(() => ({}))) as { erro?: string };
-      dialogo.current?.close();
-      if (resposta.ok) {
-        avisar({ tipo: "ok", texto: `Exclusão de ${nome} feita. O catálogo atualiza em cerca de 2 minutos.` });
-        router.refresh();
-      } else {
-        avisar({ tipo: "erro", texto: resultado.erro ?? "Não foi possível excluir." });
-      }
-    } catch {
-      dialogo.current?.close();
-      avisar({ tipo: "erro", texto: "Sem conexão com o servidor. Nada foi excluído." });
+    const { ok, corpo: resultado } = await pedir(url, "DELETE", corpo);
+    dialogo.current?.close();
+    if (ok) {
+      avisar({ tipo: "ok", texto: `Exclusão de ${nome} feita. O catálogo atualiza em cerca de 2 minutos.` });
+      router.refresh();
+    } else {
+      avisar({ tipo: "erro", texto: resultado.erro ?? "Não foi possível excluir." });
     }
     setExcluindo(false);
   }
@@ -58,7 +49,7 @@ export function BotaoExcluir({ nome, url, corpo, explicacao, ocupado = false }: 
           if (!ocupado) dialogo.current?.showModal();
         }}
         aria-disabled={ocupado || undefined}
-        className={`${BASE_BOTAO} ${estiloBotao("ghost")} aria-disabled:opacity-40`}
+        className={classeBotao("ghost")}
         aria-label={`Excluir ${nome}`}
       >
         Excluir
@@ -74,7 +65,7 @@ export function BotaoExcluir({ nome, url, corpo, explicacao, ocupado = false }: 
             autoFocus
             onClick={() => dialogo.current?.close()}
             disabled={excluindo}
-            className={`${BASE_BOTAO} ${estiloBotao("secondary")}`}
+            className={classeBotao("secondary")}
           >
             Cancelar
           </button>
@@ -82,7 +73,7 @@ export function BotaoExcluir({ nome, url, corpo, explicacao, ocupado = false }: 
             type="button"
             onClick={excluir}
             disabled={excluindo}
-            className={`${BASE_BOTAO} ${estiloBotao("primary")}`}
+            className={classeBotao("primary")}
           >
             {excluindo ? "Excluindo..." : "Excluir de vez"}
           </button>

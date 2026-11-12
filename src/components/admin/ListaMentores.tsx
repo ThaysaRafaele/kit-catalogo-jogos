@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { CARGOS } from "@/lib/admin/formularioMentor";
+import { pedir } from "@/lib/admin/pedir";
+import { classeBotao } from "@/lib/botoes";
 import { contar } from "@/lib/formato";
 import { useAviso } from "./Aviso";
 import { BotaoExcluir } from "./BotaoExcluir";
@@ -20,8 +22,6 @@ export type ResumoMentor = {
 
 type Props = { mentores: ResumoMentor[]; sha: string };
 
-const botao = (variante: "secondary" | "ghost") => `${BASE_BOTAO} ${estiloBotao(variante)}`;
-
 export function ListaMentores({ mentores, sha }: Props) {
   const [movendo, setMovendo] = useState(false);
   // Depois de mover, a lista (e o sha) da tela só ficam certos quando o servidor
@@ -37,23 +37,14 @@ export function ListaMentores({ mentores, sha }: Props) {
     const ordem = mentores.map((m) => m.slug);
     [ordem[indice], ordem[destino]] = [ordem[destino], ordem[indice]];
     setMovendo(true);
-    try {
-      const resposta = await fetch("/api/admin/mentores", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ordem, sha }),
-      });
-      const corpo = (await resposta.json().catch(() => ({}))) as { erro?: string };
-      if (resposta.ok) {
-        // Só anuncia: o foco fica no botão, para a pessoa poder mover de novo.
-        avisar({ tipo: "ok", texto: `${mentores[indice].nome} agora está na posição ${destino + 1} de ${mentores.length}.` }, { focar: false });
-        setShaVencido(sha);
-        router.refresh();
-      } else {
-        avisar({ tipo: "erro", texto: corpo.erro ?? "Não foi possível mudar a ordem." });
-      }
-    } catch {
-      avisar({ tipo: "erro", texto: "Sem conexão com o servidor. A ordem não mudou." });
+    const { ok, corpo } = await pedir("/api/admin/mentores", "PUT", { ordem, sha });
+    if (ok) {
+      // Só anuncia: o foco fica no botão, para a pessoa poder mover de novo.
+      avisar({ tipo: "ok", texto: `${mentores[indice].nome} agora está na posição ${destino + 1} de ${mentores.length}.` }, { focar: false });
+      setShaVencido(sha);
+      router.refresh();
+    } else {
+      avisar({ tipo: "erro", texto: corpo.erro ?? "Não foi possível mudar a ordem." });
     }
     setMovendo(false);
   }
@@ -76,7 +67,7 @@ export function ListaMentores({ mentores, sha }: Props) {
             <div className="flex min-w-60 flex-1 flex-col gap-2">
               <h2 className="text-xl font-bold text-tinta">{mentor.nome}</h2>
               <p className={estilos.ajuda}>
-                {mentor.cargo === "coordenação" ? "Coordenação" : mentor.cargo === "professor" ? "Professor ou professora" : "Cargo não escolhido"}
+                {CARGOS.find((c) => c.valor === mentor.cargo)?.nome ?? "Cargo não escolhido"}
                 {mentor.lider && " • Líder (aparece em destaque)"}
               </p>
               {mentor.pendencias.length > 0 && (
@@ -90,7 +81,7 @@ export function ListaMentores({ mentores, sha }: Props) {
                 </details>
               )}
               <div className="flex flex-wrap gap-3">
-                <a href={`/admin/mentores/${mentor.slug}`} className={botao("secondary")} aria-label={`Editar ${mentor.nome}`}>
+                <a href={`/admin/mentores/${mentor.slug}`} className={classeBotao("secondary")} aria-label={`Editar ${mentor.nome}`}>
                   Editar
                 </a>
                 {/* aria-disabled nas pontas (e não disabled): o foco não se perde depois de mover. */}
@@ -99,7 +90,7 @@ export function ListaMentores({ mentores, sha }: Props) {
                   onClick={() => mover(i, -1)}
                   aria-disabled={primeiro || ocupado || undefined}
                   aria-label={`Subir ${mentor.nome}`}
-                  className={`${botao("ghost")} aria-disabled:opacity-40`}
+                  className={classeBotao("ghost")}
                 >
                   Subir
                 </button>
@@ -108,7 +99,7 @@ export function ListaMentores({ mentores, sha }: Props) {
                   onClick={() => mover(i, 1)}
                   aria-disabled={ultimo || ocupado || undefined}
                   aria-label={`Descer ${mentor.nome}`}
-                  className={`${botao("ghost")} aria-disabled:opacity-40`}
+                  className={classeBotao("ghost")}
                 >
                   Descer
                 </button>

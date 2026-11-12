@@ -4,14 +4,19 @@
  * branch agora, mesmo antes de o deploy terminar.
  */
 import { z } from "zod";
-import { edicaoSchema, jogoSchema, mentoresSchema, PADRAO_ANO, type Edicao } from "../esquema.ts";
-import { limparConteudo, type Pendencia } from "../limpeza.ts";
-import { caminhos } from "./caminhos.ts";
-import { ehObjeto } from "./formularioJogo.ts";
+import { edicaoSchema, jogoSchema, PADRAO_ANO, type Edicao } from "../esquema.ts";
+import { conferirComoBuild, limparConteudo, type Pendencia } from "../limpeza.ts";
+import { caminhos, paraSrc } from "./caminhos.ts";
+import { ehObjeto } from "./formulario.ts";
+import { slugDoMentor } from "./formularioMentor.ts";
 import { lerArquivo, listarArquivos, listarTudo } from "./repositorio.ts";
 import { descreverParaPainel } from "./rotulos.ts";
 
 const nomeDe = (caminho: string) => caminho.slice(caminho.lastIndexOf("/") + 1);
+
+/** Slugs dos jogos pelos nomes dos arquivos da pasta: "…/jogos/heaven-runner.json" → "heaven-runner". */
+const slugsDosArquivos = (arquivos: string[]) =>
+  arquivos.map(nomeDe).filter((nome) => nome.endsWith(".json")).map((nome) => nome.slice(0, -5));
 
 /** Anos com pasta em content/edicoes, do mais recente para o mais antigo. */
 export async function listarAnos(): Promise<string[]> {
@@ -44,8 +49,7 @@ export async function lerJson(caminho: string): Promise<JsonLido> {
 
 /** srcs ("/edicoes/2026/slug/mundo.webp") de todas as imagens já enviadas da edição. */
 async function imagensDaEdicao(ano: string): Promise<Set<string>> {
-  const arquivos = await listarTudo(`public/edicoes/${ano}`);
-  return new Set(arquivos.map((caminho) => caminho.replace(/^public/, "")));
+  return new Set((await listarTudo(caminhos.pastaDesenhos(ano))).map(paraSrc));
 }
 
 /** Campos que podem ficar em branco sem virar pendência. */
@@ -115,11 +119,7 @@ function resumir(
 
 /** Slugs dos jogos da edição (pelos nomes dos arquivos). */
 export async function listarJogos(ano: string): Promise<string[]> {
-  const arquivos = await listarArquivos(caminhos.pastaJogos(ano));
-  return arquivos
-    .map(nomeDe)
-    .filter((nome) => nome.endsWith(".json"))
-    .map((nome) => nome.slice(0, -5));
+  return slugsDosArquivos(await listarArquivos(caminhos.pastaJogos(ano)));
 }
 
 /**
@@ -128,22 +128,43 @@ export async function listarJogos(ano: string): Promise<string[]> {
  */
 export async function jogosDaEdicao(ano: string) {
   const arquivos = await listarArquivos(caminhos.pastaJogos(ano));
-  const slugs = arquivos.map(nomeDe).filter((nome) => nome.endsWith(".json")).map((nome) => nome.slice(0, -5));
+  const slugs = slugsDosArquivos(arquivos);
   const lidos = await Promise.all(slugs.map((slug) => lerJson(caminhos.jogo(ano, slug))));
   return { arquivos, jogos: slugs.flatMap((slug, i) => (lidos[i] ? [{ slug, lido: lidos[i] }] : [])) };
 }
 
-/** Nomes dos mentores do mentores.json, validado pelo mesmo esquema do build. */
-export async function nomesDosMentores(): Promise<string[]> {
+type FichaMentor = Record<string, unknown>;
+
+const nomeDa = (ficha: FichaMentor) => (typeof ficha.nome === "string" ? ficha.nome : "");
+
+/** A lista como está no arquivo (fichas cruas, com tudo o que tiverem) e o sha. */
+export async function lerMentores(): Promise<{ fichas: FichaMentor[]; sha: string | null; erro?: string }> {
   const arquivo = await lerArquivo(caminhos.mentores());
-  if (!arquivo) return [];
+  if (!arquivo) return { fichas: [], sha: null, erro: "O arquivo content/mentores.json não existe." };
   try {
-    const limpo = limparConteudo(JSON.parse(arquivo.conteudo), { existeImagem: () => true }, []);
-    const resultado = mentoresSchema.safeParse(limpo);
-    return resultado.success ? resultado.data.map((m) => m.nome) : [];
-  } catch {
-    return [];
+    const dados: unknown = JSON.parse(arquivo.conteudo);
+    if (!Array.isArray(dados)) return { fichas: [], sha: arquivo.sha, erro: "O mentores.json não é uma lista." };
+    const fichas = dados.filter(ehObjeto);
+    // Cada mentor é achado pelo slug do nome: nome vazio ou dois nomes com o mesmo
+    // slug ("Ana Souza" e "Ana souza") deixariam o admin mexendo na ficha errada.
+    const vistos = new Set<string>();
+    for (const ficha of fichas) {
+      const slug = slugDoMentor(nomeDa(ficha));
+      if (!slug) return { fichas: [], sha: arquivo.sha, erro: "Há um mentor sem nome no mentores.json." };
+      if (vistos.has(slug)) {
+        return { fichas: [], sha: arquivo.sha, erro: `Dois mentores têm nomes quase iguais ("${nomeDa(ficha)}"). Deixe os nomes diferentes no mentores.json.` };
+      }
+      vistos.add(slug);
+    }
+    return { fichas, sha: arquivo.sha };
+  } catch (erro) {
+    return { fichas: [], sha: arquivo.sha, erro: `JSON inválido: ${(erro as Error).message}` };
   }
+}
+
+/** Nomes dos mentores, para escolher o de cada turma. */
+export async function nomesDosMentores(): Promise<string[]> {
+  return (await lerMentores()).fichas.map(nomeDa);
 }
 
 export type EdicaoLida = {
@@ -166,7 +187,7 @@ export async function lerEdicao(ano: string): Promise<EdicaoLida> {
   if (!lido) return { edicao: null, sha: null, semArquivo: true, erroEdicao: "Esta edição não tem edicao.json.", turmas: [] };
   const base = { sha: lido.sha, semArquivo: false };
   if ("erro" in lido) return { ...base, edicao: null, erroEdicao: lido.erro, turmas: [] };
-  const resultado = edicaoSchema.safeParse(limparConteudo(lido.dados, { existeImagem: () => true }, []));
+  const resultado = conferirComoBuild(edicaoSchema, lido.dados);
   return resultado.success
     ? { ...base, edicao: resultado.data, turmas: resultado.data.turmas.map((t) => t.id) }
     : { ...base, edicao: null, erroEdicao: z.prettifyError(resultado.error), turmas: [] };
@@ -179,12 +200,11 @@ export async function contextoDoFormulario(ano: string) {
 }
 
 export async function painelDaEdicao(ano: string): Promise<PainelEdicao> {
-  const [{ edicao, erroEdicao, turmas }, { jogos: lidos }, lista] = await Promise.all([
+  const [{ edicao, erroEdicao, turmas }, { jogos: lidos }, imagens] = await Promise.all([
     lerEdicao(ano),
     jogosDaEdicao(ano),
     imagensDaEdicao(ano),
   ]);
-  const imagens = new Set(lista);
   const jogos = lidos
     .map(({ slug, lido }) => resumir(slug, lido, turmas, (src) => imagens.has(src)))
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));

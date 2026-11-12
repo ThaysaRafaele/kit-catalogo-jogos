@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { classeBotao } from "@/lib/botoes";
 import { estilos } from "./estilos";
 
 type Props<T> = {
@@ -54,7 +54,7 @@ export function Linhas<T>(props: Props<T>) {
                 setFocar(idAdicionar);
                 anunciar(`Linha ${i + 1} removida.`);
               }}
-              className={`${BASE_BOTAO} ${estiloBotao("ghost")} self-start`}
+              className={`${classeBotao("ghost")} self-start`}
             >
               Remover linha {i + 1}
               {descricao && `: ${descricao}`}
@@ -70,7 +70,7 @@ export function Linhas<T>(props: Props<T>) {
           setFocar(idPrimeiroCampo(itens.length));
           anunciar(`Linha ${itens.length + 1} adicionada.`);
         }}
-        className={`${BASE_BOTAO} ${estiloBotao("secondary")} self-start`}
+        className={`${classeBotao("secondary")} self-start`}
       >
         {props.rotuloAdicionar}
       </button>

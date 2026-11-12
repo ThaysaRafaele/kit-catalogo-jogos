@@ -4,7 +4,7 @@
  * 8 MB do celular vira algumas centenas de KB e cabe no limite de uma requisição.
  */
 
-export const TIPOS_ACEITOS = ["image/jpeg", "image/png", "image/webp"];
+const TIPOS_ACEITOS = ["image/jpeg", "image/png", "image/webp"];
 export const ACEITAR = TIPOS_ACEITOS.join(",");
 const LADO_MAXIMO = 1600;
 const QUALIDADE = 0.85;

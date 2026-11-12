@@ -1,22 +1,18 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { lerCorpo, responderPublicacao } from "@/lib/admin/respostaPublicacao";
-import { exigirSessao, respostaErro } from "@/lib/admin/servidor";
+import type { NextRequest } from "next/server";
+import { lerCorpoJogo } from "@/lib/admin/corpoJogo";
+import { publicarJogo } from "@/lib/admin/publicarJogo";
+import { comSessao, pedidoIncompleto } from "@/lib/admin/servidor";
 
 export const runtime = "nodejs";
 
 type Contexto = { params: Promise<{ ano: string }> };
 
-/** Publica um jogo novo. */
+/** Publica um jogo novo (com os desenhos, se vierem no multipart). */
 export async function POST(req: NextRequest, { params }: Contexto) {
-  const sessao = exigirSessao(req);
-  if (sessao instanceof NextResponse) return sessao;
-
-  const corpo = await lerCorpo(req);
-  if (!corpo) return respostaErro("Pedido sem a ficha do jogo.", 400);
-
-  const { ano } = await params;
-  return responderPublicacao(
-    { ano, entrada: corpo.entrada, slugOriginal: null, sha: null, autor: sessao.nome },
-    corpo.arquivos,
-  );
+  return comSessao(req, async (sessao) => {
+    const corpo = await lerCorpoJogo(req, { exigirSha: false });
+    if (!corpo) return pedidoIncompleto();
+    const { ano } = await params;
+    return publicarJogo({ ...corpo, ano, slugOriginal: null, sha: null, autor: sessao.nome });
+  });
 }

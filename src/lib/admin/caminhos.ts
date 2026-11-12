@@ -2,6 +2,7 @@
  * Regras de onde o admin pode escrever. Toda gravação, no GitHub ou no disco,
  * passa por validarCaminho antes: é a última barreira contra "../" e afins.
  */
+import type { TipoDesenho } from "./formularioJogo.ts";
 
 /** Pastas liberadas e a extensão aceita em cada uma. */
 const AREAS: { prefixo: string; extensao: RegExp }[] = [
@@ -65,8 +66,12 @@ export const caminhos = {
   edicao: (ano: number | string) => `content/edicoes/${ano}/edicao.json`,
   pastaJogos: (ano: number | string) => `content/edicoes/${ano}/jogos`,
   jogo: (ano: number | string, slug: string) => `content/edicoes/${ano}/jogos/${slug}.json`,
-  desenho: (ano: number | string, slug: string, tipo: "protagonista" | "antagonista" | "mundo") =>
-    `public/edicoes/${ano}/${slug}/${tipo}.webp`,
+  pastaDesenhos: (ano: number | string) => `public/edicoes/${ano}`,
+  desenho: (ano: number | string, slug: string, tipo: TipoDesenho) => `public/edicoes/${ano}/${slug}/${tipo}.webp`,
   mentores: () => "content/mentores.json",
+  pastaFotos: () => "public/mentores",
   fotoMentor: (slugNome: string) => `public/mentores/${slugNome}.webp`,
 };
+
+/** Caminho no repositório → endereço no site: "public/mentores/x.webp" → "/mentores/x.webp". */
+export const paraSrc = (caminho: string) => caminho.replace(/^public/, "");

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { classeBotao } from "@/lib/botoes";
 import { sessaoAtual } from "@/lib/admin/servidor";
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
                 Você entrou como <strong>{sessao.nome}</strong>
               </p>
               <form method="post" action="/api/admin/sair">
-                <button type="submit" className={`${BASE_BOTAO} ${estiloBotao("ghost")}`}>
+                <button type="submit" className={classeBotao("ghost")}>
                   Sair
                 </button>
               </form>

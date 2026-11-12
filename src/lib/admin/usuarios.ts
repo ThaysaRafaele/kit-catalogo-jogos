@@ -13,9 +13,22 @@ const usuariosSchema = z.array(
 
 export type Usuario = z.infer<typeof usuariosSchema>[number];
 
-export function lerUsuarios(): Usuario[] {
+/**
+ * A lista é lida a cada pedido ao /admin (proxy, rota, página). Ela só é
+ * interpretada de novo quando o texto da variável muda, o que mantém o "tirar da
+ * lista + Redeploy" valendo na hora.
+ */
+let ultima: { bruto: string; usuarios: Usuario[] } | undefined;
+
+function lerUsuarios(): Usuario[] {
   const bruto = process.env.ADMIN_USUARIOS;
   if (!bruto) throw new Error("Configure ADMIN_USUARIOS (veja o .env.example).");
+  if (ultima?.bruto === bruto) return ultima.usuarios;
+  ultima = { bruto, usuarios: interpretar(bruto) };
+  return ultima.usuarios;
+}
+
+function interpretar(bruto: string): Usuario[] {
   let dados: unknown;
   try {
     dados = JSON.parse(bruto);

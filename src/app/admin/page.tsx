@@ -4,7 +4,7 @@ import { estilos } from "@/components/admin/estilos";
 import { BotaoExcluir } from "@/components/admin/BotaoExcluir";
 import { NovaEdicao } from "@/components/admin/NovaEdicao";
 import { listarAnos, painelDaEdicao, type ResumoJogo, type StatusJogo } from "@/lib/admin/dados";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { classeBotao } from "@/lib/botoes";
 import { ancoraDoJogo, contar } from "@/lib/formato";
 
 export const metadata: Metadata = { title: "Painel" };
@@ -17,8 +17,6 @@ const STATUS: Record<StatusJogo, { texto: string; contagem: [string, string]; cl
   semAutorizacao: { texto: "Sem autorização de imagem", contagem: ["sem autorização", "sem autorização"], classe: "border-noite bg-[#ecebf5]" },
   invalido: { texto: "Com erro: impede a publicação", contagem: ["com erro", "com erro"], classe: "border-erro bg-erro-fundo" },
 };
-
-const link = (variante: "primary" | "secondary" | "ghost") => `${BASE_BOTAO} ${estiloBotao(variante)}`;
 
 function CartaoJogo({ ano, jogo }: { ano: string; jogo: ResumoJogo }) {
   const status = STATUS[jogo.status];
@@ -58,14 +56,14 @@ function CartaoJogo({ ano, jogo }: { ano: string; jogo: ResumoJogo }) {
       )}
 
       <div className="mt-4 flex flex-wrap gap-3">
-        <a href={`/admin/${ano}/jogo/${jogo.slug}`} className={link("secondary")} aria-label={`Editar ${jogo.nome}`}>
+        <a href={`/admin/${ano}/jogo/${jogo.slug}`} className={classeBotao("secondary")} aria-label={`Editar ${jogo.nome}`}>
           Editar
         </a>
         <a
           href={`/${ano}#${ancoraDoJogo(jogo.slug)}`}
           target="_blank"
           rel="noopener"
-          className={link("ghost")}
+          className={classeBotao("ghost")}
           aria-label={`Ver ${jogo.nome} no catálogo (abre em nova aba)`}
         >
           Ver no catálogo
@@ -121,7 +119,7 @@ export default async function Painel({ searchParams }: Props) {
                     <a
                       href={`/admin?ano=${a}`}
                       aria-current={a === ano ? "page" : undefined}
-                      className={`${BASE_BOTAO} ${estiloBotao("chip", a === ano)}`}
+                      className={classeBotao("chip", a === ano)}
                     >
                       Edição {a}
                     </a>
@@ -156,7 +154,7 @@ export default async function Painel({ searchParams }: Props) {
               </p>
               <div className="flex flex-wrap gap-3">
                 {painel.turmas.length > 0 ? (
-                  <a href={`/admin/${painel.ano}/jogo/novo`} className={link("primary")}>
+                  <a href={`/admin/${painel.ano}/jogo/novo`} className={classeBotao("primary")}>
                     Novo jogo
                   </a>
                 ) : (
@@ -165,10 +163,10 @@ export default async function Painel({ searchParams }: Props) {
                     jogos.
                   </p>
                 )}
-                <a href={`/admin/${painel.ano}/edicao`} className={link("secondary")}>
+                <a href={`/admin/${painel.ano}/edicao`} className={classeBotao("secondary")}>
                   Dados da edição
                 </a>
-                <a href="/admin/mentores" className={link("ghost")}>
+                <a href="/admin/mentores" className={classeBotao("ghost")}>
                   Mentores
                 </a>
               </div>

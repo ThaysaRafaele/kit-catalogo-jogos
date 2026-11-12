@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { ProvedorAviso } from "@/components/admin/Aviso";
-import { estilos } from "@/components/admin/estilos";
 import { ListaMentores, type ResumoMentor } from "@/components/admin/ListaMentores";
-import { ErroTela } from "@/components/admin/TelaJogo";
+import { ErroTela, TelaJogo } from "@/components/admin/TelaJogo";
 import { fotoDoMentor, paraFormularioMentor, slugDoMentor } from "@/lib/admin/formularioMentor";
-import { lerMentores } from "@/lib/admin/publicarMentor";
+import { caminhos, paraSrc } from "@/lib/admin/caminhos";
+import { lerMentores } from "@/lib/admin/dados";
 import { listarArquivos } from "@/lib/admin/repositorio";
-import { BASE_BOTAO, estiloBotao } from "@/lib/botoes";
+import { classeBotao } from "@/lib/botoes";
 
 export const metadata: Metadata = { title: "Mentores" };
 
 export default async function Mentores() {
-  const [{ fichas, sha, erro }, fotos] = await Promise.all([lerMentores(), listarArquivos("public/mentores")]);
-  const fotosExistentes = new Set(fotos.map((caminho) => caminho.replace(/^public/, "")));
+  const [{ fichas, sha, erro }, fotos] = await Promise.all([lerMentores(), listarArquivos(caminhos.pastaFotos())]);
+  const fotosExistentes = new Set(fotos.map(paraSrc));
 
   const mentores: ResumoMentor[] = fichas.map((ficha) => {
     const m = paraFormularioMentor(ficha);
@@ -37,28 +37,24 @@ export default async function Mentores() {
 
   return (
     <ProvedorAviso>
-      <div className="flex flex-col gap-6">
-        <p>
-          <a href="/admin">← Voltar ao painel</a>
-        </p>
-        <h1 className={estilos.titulo}>Mentores</h1>
+      <TelaJogo titulo="Mentores" voltar={{ href: "/admin", texto: "Voltar ao painel" }}>
         <p>
           A ordem da lista é a ordem das fichas no catálogo. Quem está marcado como líder aparece em destaque na
           primeira página.
         </p>
         {erro || !sha ? (
           <ErroTela>
-            <p className="font-bold">{erro ?? "O arquivo content/mentores.json não existe."}</p>
+            <p className="font-bold">{erro}</p>
           </ErroTela>
         ) : (
           <>
-            <a href="/admin/mentores/novo" className={`${BASE_BOTAO} ${estiloBotao("primary")} self-start`}>
+            <a href="/admin/mentores/novo" className={`${classeBotao("primary")} self-start`}>
               Novo mentor
             </a>
             <ListaMentores mentores={mentores} sha={sha} />
           </>
         )}
-      </div>
+      </TelaJogo>
     </ProvedorAviso>
   );
 }

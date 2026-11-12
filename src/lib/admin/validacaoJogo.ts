@@ -4,32 +4,18 @@
  * uma ficha que quebraria o build).
  */
 import { jogoSchema, PADRAO_SLUG } from "../esquema.ts";
-import { limparConteudo } from "../limpeza.ts";
+import { conferirComoBuild } from "../limpeza.ts";
+import { coletorDeErros, indicesPreenchidos } from "./formulario.ts";
 import { paraGravar, type EntradaJogo } from "./formularioJogo.ts";
 import { rotuloDoCampo } from "./rotulos.ts";
 
-export type ErroCampo = {
-  /** Id do campo no formulário (também é o alvo do link no resumo de erros). */
-  id: string;
-  rotulo: string;
-  mensagem: string;
-};
-
-export type ContextoValidacao = {
+type ContextoValidacao = {
   ano: string;
   /** Turmas cadastradas na edição. */
   turmas: string[];
   /** Slugs dos outros jogos da edição (sem o do próprio jogo). */
   slugsOcupados: string[];
 };
-
-/** Caminho do campo → id no formulário: ["protagonista", "nome"] → "campo-protagonista-nome". */
-export function idDoCampo(caminho: readonly (string | number)[]): string {
-  // Erro numa tecla aponta para o campo de teclas da linha (é um campo só no formulário).
-  const i = caminho.indexOf("teclas");
-  const util = i >= 0 ? caminho.slice(0, i + 1) : caminho;
-  return ["campo", ...util].join("-");
-}
 
 /** Mensagens por campo, mais claras que as genéricas do zod. */
 const MENSAGENS: Record<string, string> = {
@@ -46,16 +32,16 @@ const MENSAGENS: Record<string, string> = {
 /** Endereços que já são telas do admin e não podem virar slug. */
 const RESERVADOS = new Set(["novo"]);
 
+/** "Equipe: função (linha 2)": de qual linha é o erro. */
+function rotular(caminho: (string | number)[]) {
+  const linha = caminho.find((p) => typeof p === "number");
+  const rotulo = rotuloDoCampo(`.${caminho.filter((p) => typeof p === "string").join(".")}`);
+  return typeof linha === "number" ? `${rotulo} (linha ${linha + 1})` : rotulo;
+}
+
 export function validarJogo(entrada: EntradaJogo, ctx: ContextoValidacao) {
   const gravar = paraGravar(entrada, ctx.ano);
-  const erros: ErroCampo[] = [];
-  const adicionar = (caminho: (string | number)[], mensagem: string) => {
-    const id = idDoCampo(caminho);
-    if (erros.some((e) => e.id === id)) return;
-    const linha = caminho.find((p) => typeof p === "number");
-    const rotulo = rotuloDoCampo(`.${caminho.filter((p) => typeof p === "string").join(".")}`);
-    erros.push({ id, rotulo: typeof linha === "number" ? `${rotulo} (linha ${linha + 1})` : rotulo, mensagem });
-  };
+  const { erros, adicionar, adicionarDoEsquema } = coletorDeErros(rotular);
 
   // Na ordem da ficha, para o resumo de erros seguir a ordem da tela.
   if (!ctx.turmas.includes(gravar.turma)) adicionar(["turma"], "Escolha a turma.");
@@ -75,15 +61,13 @@ export function validarJogo(entrada: EntradaJogo, ctx: ContextoValidacao) {
     if (p.funcao.trim() && !p.nome.trim()) adicionar(["equipe", i, "nome"], "Escreva o primeiro nome, ou remova a linha.");
   });
 
-  // O esquema do build, sobre a ficha limpa do mesmo jeito que o build limpa.
-  const resultado = jogoSchema.safeParse(limparConteudo(gravar, { existeImagem: () => true }, []));
-  if (!resultado.success) {
-    for (const issue of resultado.error.issues) {
-      const caminho = issue.path.filter((p): p is string | number => typeof p !== "symbol");
-      const chave = caminho.filter((p) => typeof p === "string").join(".");
-      adicionar(caminho, MENSAGENS[chave] ?? issue.message);
-    }
-  }
+  adicionarDoEsquema(conferirComoBuild(jogoSchema, gravar), {
+    mensagens: MENSAGENS,
+    indicesNaTela: {
+      controles: indicesPreenchidos(entrada.controles, (c) => Boolean(c.acao.trim() || c.teclas.trim())),
+      equipe: indicesPreenchidos(entrada.equipe, (p) => Boolean(p.nome.trim() || p.funcao.trim())),
+    },
+  });
 
   const ordem = (id: string) => ORDEM_DOS_CAMPOS.findIndex((prefixo) => id.startsWith(prefixo));
   erros.sort((a, b) => ordem(a.id) - ordem(b.id));

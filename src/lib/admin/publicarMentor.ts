@@ -6,40 +6,15 @@
 import { mentoresSchema } from "../esquema.ts";
 import { caminhos } from "./caminhos.ts";
 import { mensagemCommit } from "./commit.ts";
-import { ehObjeto } from "./formularioJogo.ts";
+import { lerMentores } from "./dados.ts";
+import { ValidacaoError } from "./formulario.ts";
 import { paraFormularioMentor, slugDoMentor, validarMentor } from "./formularioMentor.ts";
 import { formatarJson } from "./json.ts";
-import { ValidacaoError } from "./publicarJogo.ts";
-import { ConflitoError, lerArquivo, salvarArquivos, shaDoGit, type ArquivoParaSalvar } from "./repositorio.ts";
+import { ConflitoError, salvarArquivos, shaDoGit, type ArquivoParaSalvar } from "./repositorio.ts";
 
 type Ficha = Record<string, unknown>;
 
 const nomeDa = (ficha: Ficha) => (typeof ficha.nome === "string" ? ficha.nome : "");
-
-/** A lista como está no arquivo (fichas cruas, com tudo o que tiverem) e o sha. */
-export async function lerMentores(): Promise<{ fichas: Ficha[]; sha: string | null; erro?: string }> {
-  const arquivo = await lerArquivo(caminhos.mentores());
-  if (!arquivo) return { fichas: [], sha: null };
-  try {
-    const dados: unknown = JSON.parse(arquivo.conteudo);
-    if (!Array.isArray(dados)) return { fichas: [], sha: arquivo.sha, erro: "O mentores.json não é uma lista." };
-    const fichas = dados.filter(ehObjeto);
-    // Cada mentor é achado pelo slug do nome: nome vazio ou dois nomes com o mesmo
-    // slug ("Ana Souza" e "Ana souza") deixariam o admin mexendo na ficha errada.
-    const vistos = new Set<string>();
-    for (const ficha of fichas) {
-      const slug = slugDoMentor(nomeDa(ficha));
-      if (!slug) return { fichas: [], sha: arquivo.sha, erro: "Há um mentor sem nome no mentores.json." };
-      if (vistos.has(slug)) {
-        return { fichas: [], sha: arquivo.sha, erro: `Dois mentores têm nomes quase iguais ("${nomeDa(ficha)}"). Deixe os nomes diferentes no mentores.json.` };
-      }
-      vistos.add(slug);
-    }
-    return { fichas, sha: arquivo.sha };
-  } catch (erro) {
-    return { fichas: [], sha: arquivo.sha, erro: `JSON inválido: ${(erro as Error).message}` };
-  }
-}
 
 /** Lê de novo e confere se ninguém salvou desde que a pessoa abriu a tela. */
 async function lerConferindo(sha: string) {

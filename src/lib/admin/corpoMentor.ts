@@ -1,6 +1,6 @@
 /** Corpo das rotas de mentor: o pedido é conferido antes, e só então a foto passa pelo sharp. */
 import { ImagemInvalidaError, processarFoto } from "./imagem.ts";
-import { lerEntradaEArquivos } from "./respostaPublicacao.ts";
+import { lerEntradaEArquivos } from "./servidor.ts";
 
 export async function lerCorpoMentor(req: Request) {
   const corpo = await lerEntradaEArquivos(req, ["foto"]);

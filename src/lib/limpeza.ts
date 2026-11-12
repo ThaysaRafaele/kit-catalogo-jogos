@@ -2,6 +2,7 @@
  * Limpeza do JSON antes da validação, sem acesso a disco: quem chama diz como saber
  * se uma imagem existe. O build usa o disco (conteudo.ts); o admin, o GitHub.
  */
+import type { z } from "zod";
 import { MARCADOR_VAZIO } from "./esquema.ts";
 
 /** Recebe o src como está no JSON (ex.: "/edicoes/2026/x/mundo.webp"). */
@@ -78,6 +79,14 @@ function limpar(atual: unknown, campo: string, chave: string, opcoes: OpcoesLimp
     );
   }
   return atual;
+}
+
+/**
+ * Confere os dados como o build confere: limpa do mesmo jeito e passa pelo mesmo
+ * esquema. Único ponto que garante "o admin valida exatamente como o build".
+ */
+export function conferirComoBuild<S extends z.ZodType>(schema: S, dados: unknown, existeImagem: ExisteImagem = () => true) {
+  return schema.safeParse(limparConteudo(dados, { existeImagem }, []));
 }
 
 /** Texto de uma pendência, no formato que o `npm run validar` mostra. */

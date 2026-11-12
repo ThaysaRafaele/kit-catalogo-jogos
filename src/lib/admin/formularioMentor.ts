@@ -4,9 +4,9 @@
  * da pessoa. Se o arquivo já tiver disciplinas, elas ficam como estão.
  */
 import { MARCADOR_VAZIO, mentoresSchema } from "../esquema.ts";
-import { limparConteudo } from "../limpeza.ts";
-import { gerarSlug, lista, objeto, texto } from "./formularioJogo.ts";
-import { idDoCampo, type ErroCampo } from "./validacaoJogo.ts";
+import { conferirComoBuild } from "../limpeza.ts";
+import { coletorDeErros, lista, objeto, texto } from "./formulario.ts";
+import { gerarSlug } from "./formularioJogo.ts";
 
 export type Cargo = "coordenação" | "professor";
 export const CARGOS: { valor: Cargo; nome: string }[] = [
@@ -86,21 +86,17 @@ const ROTULOS: Record<string, string> = {
 /** `outrosSlugs`: os dos outros mentores, para o nome (e a foto) não repetir. */
 export function validarMentor(e: EntradaMentor, outrosSlugs: string[]) {
   const gravar = paraGravarMentor(e);
-  const erros: ErroCampo[] = [];
-  const adicionar = (campo: string, mensagem: string) => {
-    const id = idDoCampo([campo]);
-    if (!erros.some((erro) => erro.id === id)) erros.push({ id, rotulo: ROTULOS[campo] ?? campo, mensagem });
-  };
+  const { erros, adicionar } = coletorDeErros(([campo]) => ROTULOS[String(campo)] ?? String(campo));
 
-  if (!gravar.nome) adicionar("nome", "Escreva o nome do mentor.");
-  else if (!slugDoMentor(gravar.nome)) adicionar("nome", "Use pelo menos uma letra ou número no nome.");
-  else if (outrosSlugs.includes(slugDoMentor(gravar.nome))) adicionar("nome", "Já existe um mentor com este nome.");
-  if (!gravar.cargo) adicionar("cargo", "Escolha o cargo.");
+  if (!gravar.nome) adicionar(["nome"], "Escreva o nome do mentor.");
+  else if (!slugDoMentor(gravar.nome)) adicionar(["nome"], "Use pelo menos uma letra ou número no nome.");
+  else if (outrosSlugs.includes(slugDoMentor(gravar.nome))) adicionar(["nome"], "Já existe um mentor com este nome.");
+  if (!gravar.cargo) adicionar(["cargo"], "Escolha o cargo.");
 
-  // O mesmo esquema do build, sobre a ficha limpa do mesmo jeito que o build limpa.
-  const resultado = mentoresSchema.safeParse(limparConteudo([gravar], { existeImagem: () => true }, []));
+  // O esquema do build é o da lista inteira: a ficha vai como a única da lista.
+  const resultado = conferirComoBuild(mentoresSchema, [gravar]);
   if (!resultado.success) {
-    for (const issue of resultado.error.issues) adicionar(String(issue.path[1] ?? "nome"), issue.message);
+    for (const issue of resultado.error.issues) adicionar([String(issue.path[1] ?? "nome")], issue.message);
   }
   return { erros, gravar };
 }
