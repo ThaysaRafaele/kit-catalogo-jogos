@@ -4,15 +4,23 @@ import { Cenario } from "@/components/Cenario";
 import { BookPage } from "@/components/livro/BookPage";
 import { Livro, type DuplaPronta } from "@/components/livro/Livro";
 import { ProvedorFiltros } from "@/components/livro/telas/FiltrosSumario";
-import { buscarEdicao, carregarConteudo } from "@/lib/conteudo";
+import { buscarEdicao, carregarConteudo, edicaoMaisRecente } from "@/lib/conteudo";
 import { montarFases, montarPaginas, montarSaves } from "@/lib/paginas";
 
 type Props = { params: Promise<{ ano: string }> };
 
 export const dynamicParams = false;
 
+/**
+ * Só vira página a edição que já tem jogos. Uma edição recém-criada no admin
+ * fica fora do ar até receber o primeiro jogo. A mais recente entra sempre, porque
+ * a página inicial leva até ela.
+ */
 export function generateStaticParams() {
-  return carregarConteudo().edicoes.map((edicao) => ({ ano: String(edicao.ano) }));
+  const recente = edicaoMaisRecente().ano;
+  return carregarConteudo()
+    .edicoes.filter((edicao) => edicao.jogos.length > 0 || edicao.ano === recente)
+    .map((edicao) => ({ ano: String(edicao.ano) }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

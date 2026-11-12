@@ -1,7 +1,15 @@
 import { z } from "zod";
 
+// Mensagens de erro em português (build, validação e admin).
+z.config(z.locales.ptBR());
+
 /** Marcador usado nos JSON para campo ainda sem conteúdo. */
 export const MARCADOR_VAZIO = "PREENCHER";
+
+/** Nome da pasta de cada edição em content/edicoes. */
+export const PADRAO_ANO = /^\d{4}$/;
+/** Slug do jogo: também é o nome do arquivo e da pasta das imagens. */
+export const PADRAO_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
  * Lista de linhas que só fazem sentido completas (função e nome, ação e teclas).
@@ -24,17 +32,24 @@ export const edicaoSchema = z.object({
   turmas: z
     .array(
       z.object({
-        id: z.string().min(1),
+        id: z.string().min(1, "toda turma precisa de nome"),
         lema: z.string().optional(),
         mentor: z.string().optional(),
       }),
     )
-    .refine((turmas) => new Set(turmas.map((t) => t.id)).size === turmas.length, "turma repetida"),
+    // O erro aponta para a turma repetida (turmas[i].id), e não para a lista inteira.
+    .superRefine((turmas, ctx) => {
+      turmas.forEach((turma, i) => {
+        if (turmas.findIndex((t) => t.id === turma.id) < i) {
+          ctx.addIssue({ code: "custom", path: [i, "id"], message: `turma "${turma.id}" repetida` });
+        }
+      });
+    }),
   creditos: linhas({ funcao: z.string(), nome: z.string() }),
 });
 
 export const jogoSchema = z.object({
-  slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "use minúsculas, números e hífens"),
+  slug: z.string().regex(PADRAO_SLUG, "use minúsculas, números e hífens"),
   turma: z.string(),
   estudio: z.string(),
   nome: z.string().min(1, "todo jogo precisa de nome"),

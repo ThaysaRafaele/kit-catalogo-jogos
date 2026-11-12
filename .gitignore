@@ -14,3 +14,10 @@ entradas/
 public/mentores/*.jpeg
 public/mentores/*.jpg
 public/mentores/*.png
+
+# prompts de trabalho, fora do repositório
+PROMPT-ADMIN.md
+
+# variáveis de ambiente com segredos (o modelo é o .env.example)
+.env
+.env*.local
